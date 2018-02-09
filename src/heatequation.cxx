@@ -44,11 +44,29 @@ public:
         std::uninitialized_copy(list.begin(), list.end(), data);
     }
     
+    /**
+     * @brief Copy constructor.
+     * @param v
+     * @return 
+     */
     Vector(const Vector<T>& v)
     : Vector(v.size)
     {
         for (int i=0; i<v.size; i++)
             data[i] = v.data[i];
+    }
+    
+    /**
+     * @brief Move constructor.
+     * @param v
+     * @return 
+     */
+    Vector(Vector&& v)
+    : data(v.data), 
+      size(v.size)
+    {
+        v.size = 0;
+        v.data = nullptr;
     }
     
     /**
@@ -60,6 +78,44 @@ public:
         size=0;
         delete[] data;
     }
+    
+    
+    /**
+     * @brief Move assignment.
+     * @param other
+     */
+    Vector& operator=(const Vector& other)
+    {
+        if (this != &other)
+            {
+                delete[] data;
+                size = other.size;
+                data   = new double[other.size];
+                for (int i=0; i<other.size; i++)
+                    data[i] = other.data[i];
+            }
+        return *this;
+    }
+
+    /**
+     * @brief Copy assignment.
+     * @param other
+     */
+    Vector& operator=(Vector&& other)
+    {
+        if (this != &other)
+            {
+                delete[] data;
+                size = other.size;
+                data   = other.data;
+                other.size = 0;
+                other.data   = nullptr;
+            }
+        return *this;
+    }
+    
+    
+    
     
 
     template<typename A>
