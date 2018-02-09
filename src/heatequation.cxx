@@ -182,7 +182,6 @@ public:
 };
 
 
-
 /**
 * @brief Function that returns the dot product of two vectors.
 * @param two vectors of the same length.
@@ -200,17 +199,6 @@ T dot(const Vector<T>& l, const Vector<T>& r)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
 template<typename T>
 int cg(
     const Matrix<T> &A, const Vector<T> &b, Vector<T> &x, T tol, int maxiter)
@@ -220,7 +208,7 @@ int cg(
     int result = -1;
     for(int k = 0; k < maxiter; k++)
     {
-        alpha = dot(r, r) / dot(A * p, p);
+        T alpha = dot(r, r) / dot(A * p, p);
         Vector<T> x_n = x + alpha * p;
         Vector<T> r_n = r - alpha * A * p;
         if (dot(r_n, r_n) < tol*tol) {
@@ -236,7 +224,30 @@ int cg(
     return result;
 }
 
-
+class Heat1D
+{
+private:
+    Matrix<double> M;
+    
+public:
+    Heat1D(double alpha, int m, double dt)
+    {
+        M = Matrix<double>(m,m);
+        for (int i = 0; i < m; i++)
+        {
+            int l = i - 1;
+            int r = i + 1;
+            double dx = 1.0/(m+1);
+            double s = alpha * dt / (dx * dx);
+            M[{i,i}] = 1 + 2 * s;
+            if (l >= 0)
+                M[{i,l}] = -1 * s;
+            if (r < m)
+                M[{i,r}] = -1 * s;
+        }
+        
+    }
+}
 
 
 void test_vector_constructor(void)
