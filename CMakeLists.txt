@@ -1,8 +1,9 @@
 # Force CMake version 3.1 or above
 cmake_minimum_required (VERSION 3.1)
 
-# This project has the name: tw3720tu.2017
-project (tw3720tu.2017)
+
+# This project has the name: HeatEquation
+project (HeatEquation)
 
 # Prevent in-source builds 
 if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
@@ -45,4 +46,18 @@ if(DOXYGEN_FOUND)
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc
     )
 endif()
+
+
+# Create an executable named 'add-vectors' from the source file 'add-vectors.cxx'
+add_executable(hello_world src/hello_world.cxx)
+add_executable(heatequation src/heatequation.cxx)
+
+# Define C++11 standard
+set_property(TARGET hello_world PROPERTY CXX_STANDARD 11)
+set_property(TARGET heatequation PROPERTY CXX_STANDARD 11)
+
+# Create an additional target for assignment submission
+add_assignment(hello_world src/hello_world.cxx)
+add_assignment(heatequation src/heatequation.cxx)
+
 
