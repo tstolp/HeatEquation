@@ -79,10 +79,23 @@ public:
 
 
     template<typename A>
-    bool equals(Vector<A> other)
-    {
+    bool equals(const Vector<A>& other)
+    {        
         return false;
     }
+    
+    bool equals(const Vector<T>& other)
+    {
+        if (this->size != other.size)
+            return false;
+        for(int i = 0; i < this->size; i++)
+        {
+            if(!fabs(this->data[i] - other.data[i]) < 0.0001)
+                return false;
+        }
+        
+        return true;
+    }    
 
 
     /**
