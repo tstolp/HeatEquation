@@ -99,7 +99,7 @@ public:
 
 
     /**
-     * @brief Move assignment.
+     * @brief Copy assignment.
      * @param other
      */
     Vector& operator=(const Vector& other)
@@ -116,7 +116,7 @@ public:
     }
 
     /**
-     * @brief Copy assignment.
+     * @brief Move assignment.
      * @param other
      */
     Vector& operator=(Vector&& other)
@@ -199,7 +199,123 @@ T dot(const Vector<T>& l, const Vector<T>& r)
     return d;
 }
 
+template<typename T>
+class Matrix {
+private:
+    int size_m;
+    int size_n;
+    T** data;
+public:
+    Matrix(const int m, const int n):
+     size_n(n),
+     size_m(m),
+     data(new T*[m])
+    {
+    for(int i = 0; i < m; i++)
+        data[i] = new T[n];
+    }
+     
+    T& operator[] (const std::initializer_list<int> index) {
+        if (index.size() != 2)
+            throw "Needs 2 elements for the index";
+        //TODO check size_mn
+        return data[index.begin()[0]][index.begin()[1]];
+    }
+    
+    ~Matrix()
+    {
+        size_m = 0;
+        size_n = 0;
+        for(int i = 0; i < size_m; i++)
+            delete[] data[i];
+        delete[] data;
+    }
+    
+        /**
+     * @brief Copy constructor.
+     * @param v
+     * @return
+     */
 
+    Matrix(const Matrix<T>& m)
+    : Matrix(m.size_m, m.size_n)
+    {
+        for (int i=0; i<m.size_m; i++)
+            for (int j=0; i<m.size_n; j++)
+                data[i][j] = m.data[i][j];
+    }
+
+    /**
+     * @brief Move constructor.
+     * @param v
+     * @return
+     */
+    Matrix(Matrix&& m)
+    : data(m.data),
+      size_m(m.size_m),
+      size_n(m.size_n)
+    {
+        m.size_m = 0;
+        m.size_n = 0;
+        m.data = nullptr;
+    }
+    
+    /**
+     * @brief Copy assignment.
+     * @param other
+     */
+    Matrix& operator=(const Matrix& other)
+    {
+        if (this != &other)
+        {
+            //TODO check size
+            for (int i=0; i<other.size_m; i++)
+                for (int j=0; i<other.size_n; j++)
+                    data[i][j] = other.data[i][j];
+        }
+        return *this;
+    }
+
+    /**
+     * @brief Move assignment.
+     * @param other
+     */
+    Matrix& operator=(Matrix&& other)
+    {
+        if (this != &other)
+            {
+                delete[] data;
+                //TODO check size
+                for (int i=0; i<other.size_m; i++)
+                    for (int j=0; i<other.size_n; j++)
+                        data[i][j] = other.data[i][j];
+                data = other.data;
+                
+                other.size_m = 0;
+                other.size_n = 0;
+                other.data   = nullptr;
+            }
+        return *this;
+    }
+    
+    
+    void print()
+    {
+        for(int y = 0; y < size_m; y++) {
+            std::cout << "[";
+            for(int x = 0; x < size_n; x++) {
+                if (x != 0)
+                    std::cout << ", ";
+                std::cout << data[y][x];
+            }
+            std::cout << "]" << std::endl;
+        }
+        
+    }
+ 
+};
+
+/**
 template<typename T>
 int cg(
     const Matrix<T> &A, const Vector<T> &b, Vector<T> &x, T tol, int maxiter)
@@ -249,7 +365,7 @@ public:
         
     }
 }
-
+**/
 
 void test_vector_constructor(void)
 {
@@ -279,13 +395,20 @@ void test_vector_constructor(void)
     // std::cout << dot(H, I) << std::endl;
 }
 
+void test_matrix(void)
+{
+    Matrix<double> test(3,4);
+    test[{1,2}] = 2.0;
+    test.print();
+}
+
 /**
  * @brief Test the code.
  */
 void test(void)
 {
     test_vector_constructor();
-
+    test_matrix();
     std::cout << "All test passed!" << std::endl;
 }
 
