@@ -5,17 +5,6 @@
 #include <initializer_list>
 #include <memory>
 
-/**
- * @brief Test if expected and actual are equal.
- * @param expected The expected value.
- * @param actual The actual value.
- * @return True if expexted equals the actual value.
- */
-bool equals(double expected, double actual)
-{
-    return fabs(expected - actual) < 0.0001;
-}
-
 
 template<typename T>
 class Vector {
@@ -55,6 +44,13 @@ public:
         std::uninitialized_copy(list.begin(), list.end(), data);
     }
     
+    Vector(const Vector<T>& v)
+    : Vector(v.size)
+    {
+        for (int i=0; i<v.size; i++)
+            data[i] = v.data[i];
+    }
+    
     /**
      * @brief Destroy the vector.
      * @return 
@@ -65,24 +61,31 @@ public:
         delete[] data;
     }
     
+
     template<typename A>
     bool equals(Vector<A> other)
+    {        
+        return false;
+    }
+    
+    bool equals(Vector<T> other)
     {
-        if (!std::is_same<T, A>::value)
-            return false;
-        
+        std::cout << "1" << std::endl;
         if (this->size != other.size)
             return false;
-        
+        std::cout << "2" << std::endl;
         for(int i = 0; i < this->size; i++)
         {
-            if (this->data[i] != other.data[i])
+            std::cout << this->data[i] << " " << other.data[i] << std::endl;
+            if(!fabs(this->data[i] - other.data[i]) < 0.0001)
                 return false;
         }
         
         return true;
-        
     }
+    
+
+    
 
 };
 
@@ -92,17 +95,28 @@ public:
 void test(void)
 {
     //test equals
-    assert(equals(2.0, 2.0));
-    assert(!equals(2.0001, 2.00021));
     
     Vector<double> A;
     Vector<double> B(0);
     Vector<double> C({});
-    
+    Vector<int> E;
+    Vector<double> F(1);
+    Vector<double> G({1});
+    Vector<double> H({1,2,3});
+    Vector<double> I({1,2,3});
+    Vector<double> J({1,2,0});
+    Vector<double> K({0,2,3});
     assert(A.equals(B));
     assert(A.equals(C));
-    
-    
+    assert(!A.equals(E));
+    assert(!A.equals(F));
+    assert(!A.equals(G));
+    assert(!F.equals(G));
+    assert(!G.equals(H));
+    std::cout << "test" << std::endl;
+    assert(H.equals(I));
+    assert(!I.equals(J));
+    assert(!I.equals(K));
     
     std::cout << "All test passed!" << std::endl;
 }
