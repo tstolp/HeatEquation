@@ -33,22 +33,38 @@ public:
       size(n)
     { }
 
-    /**
-     * @brief Create a vector and initialize the vector with the values in the list.
-     * @param list the values for the vector.
-     * @return A vector initialized with the values from the list.
-     */
+
     Vector(std::initializer_list<T> list)
     : Vector((int)list.size())
     {
         std::uninitialized_copy(list.begin(), list.end(), data);
     }
 
+
+    /**
+     * @brief Copy constructor.
+     * @param v
+     * @return
+     */
+
     Vector(const Vector<T>& v)
     : Vector(v.size)
     {
         for (int i=0; i<v.size; i++)
             data[i] = v.data[i];
+    }
+
+    /**
+     * @brief Move constructor.
+     * @param v
+     * @return
+     */
+    Vector(Vector&& v)
+    : data(v.data),
+      size(v.size)
+    {
+        v.size = 0;
+        v.data = nullptr;
     }
 
     /**
@@ -68,35 +84,46 @@ public:
         return false;
     }
 
-    bool equals(Vector<T> other)
-    {
-        if (this->size != other.size)
-            return false;
-        for(int i = 0; i < this->size; i++)
-        {
-            if(!fabs(this->data[i] - other.data[i]) < 0.0001)
-                return false;
-        }
 
-        return true;
-    }
-
-      // Copy assignment
-    template<typename T>
-    Vector<T>& operator=(const Vector<T>& other<T>)
+    /**
+     * @brief Move assignment.
+     * @param other
+     */
+    Vector& operator=(const Vector& other)
     {
         if (this != &other)
             {
                 delete[] data;
                 size = other.size;
-                data   = new double(other.size);
-                for (auto i=0; i<other.size; i++)
+                data   = new double[other.size];
+                for (int i=0; i<other.size; i++)
                     data[i] = other.data[i];
             }
         return *this;
     }
 
-    template<typename T>
+    /**
+     * @brief Copy assignment.
+     * @param other
+     */
+    Vector& operator=(Vector&& other)
+    {
+        if (this != &other)
+            {
+                delete[] data;
+                size = other.size;
+                data   = other.data;
+                other.size = 0;
+                other.data   = nullptr;
+            }
+        return *this;
+    }
+
+
+    /**
+     * @brief plus operator.
+     * @param other
+     */
     Vector operator+(const Vector& other) const
     {
         Vector v(size);
@@ -113,7 +140,10 @@ public:
         return v;
     }
 
-    template<typename T>
+     /**
+     * @brief minus operator.
+     * @param other
+     */
     Vector operator-(const Vector& other) const
     {
         Vector v(size);
@@ -130,7 +160,7 @@ public:
         return v;
     }
 };
-};
+
 
 
 /**
