@@ -9,11 +9,10 @@
 template<typename T>
 class Vector {
 private:
-    T* data;
-    int size;
 
 public:
-
+    T* data;
+    int size;
     /**
      * @brief Default constructor for a vector.
      * @return An vector with size 0.
@@ -231,14 +230,14 @@ public:
         delete[] data;
     }
     
-        /**
+    /**
      * @brief Copy constructor.
      * @param v
      * @return
      */
 
     Matrix(const Matrix<T>& m)
-    : Matrix(m.size_m, m.size_n)
+    : Matrix<T>(m.size_m, m.size_n)
     {
         for (int i=0; i<m.size_m; i++)
             for (int j=0; i<m.size_n; j++)
@@ -250,7 +249,7 @@ public:
      * @param v
      * @return
      */
-    Matrix(Matrix&& m)
+    Matrix(Matrix<T>&& m)
     : data(m.data),
       size_m(m.size_m),
       size_n(m.size_n)
@@ -264,7 +263,7 @@ public:
      * @brief Copy assignment.
      * @param other
      */
-    Matrix& operator=(const Matrix& other)
+    Matrix<T>& operator=(const Matrix<T>& other)
     {
         if (this != &other)
         {
@@ -280,7 +279,7 @@ public:
      * @brief Move assignment.
      * @param other
      */
-    Matrix& operator=(Matrix&& other)
+    Matrix<T>& operator=(Matrix<T>&& other)
     {
         if (this != &other)
             {
@@ -298,6 +297,20 @@ public:
         return *this;
     }
     
+    Vector<T> matvec(const Vector<T> &v)
+    {
+        Vector<T> result(v.size);
+        //TODO check sizes;
+        for (int i=0; i<v.size_m; i++)
+            for (int j=0; i<v.size_n; j++)
+                result.data[i] += data[i][j] * v[j];
+        
+    }
+
+    Vector<T> operator*(const Vector<T> &v)
+    {
+        return matvec(v);
+    }
     
     void print()
     {
@@ -315,7 +328,6 @@ public:
  
 };
 
-/**
 template<typename T>
 int cg(
     const Matrix<T> &A, const Vector<T> &b, Vector<T> &x, T tol, int maxiter)
@@ -347,9 +359,9 @@ private:
     Matrix<double> M;
     
 public:
-    Heat1D(double alpha, int m, double dt)
+    Heat1D(double alpha, int m, double dt) :
+        M(m,m)
     {
-        M = Matrix<double>(m,m);
         for (int i = 0; i < m; i++)
         {
             int l = i - 1;
@@ -364,8 +376,7 @@ public:
         }
         
     }
-}
-**/
+};
 
 void test_vector_constructor(void)
 {
