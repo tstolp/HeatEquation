@@ -173,11 +173,12 @@ public:
         return v;
     }
 
-    Vector operator*(T scalar)
+    Vector operator*(const Vector& scalar)
     {
+        Vector v(size);
         for (auto i=0; i<size; i++)
-            data[i] *= scalar;
-        return *this;
+            v.data[i] = scalar*data[i];
+        return v;
     }
 };
 
