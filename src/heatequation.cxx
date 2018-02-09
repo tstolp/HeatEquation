@@ -5,17 +5,6 @@
 #include <initializer_list>
 #include <memory>
 
-/**
- * @brief Test if expected and actual are equal.
- * @param expected The expected value.
- * @param actual The actual value.
- * @return True if expexted equals the actual value.
- */
-bool equals(double expected, double actual)
-{
-    return fabs(expected - actual) < 0.0001;
-}
-
 
 template<typename T>
 class Vector {
@@ -55,6 +44,13 @@ public:
         std::uninitialized_copy(list.begin(), list.end(), data);
     }
     
+    Vector(const Vector<T>& v)
+    : Vector(v.size)
+    {
+        for (int i=0; i<v.size; i++)
+            data[i] = v.data[i];
+    }
+    
     /**
      * @brief Destroy the vector.
      * @return 
@@ -65,44 +61,65 @@ public:
         delete[] data;
     }
     
+
     template<typename A>
     bool equals(Vector<A> other)
+    {        
+        return false;
+    }
+    
+    bool equals(Vector<T> other)
     {
-        if (!std::is_same<T, A>::value)
-            return false;
-        
         if (this->size != other.size)
             return false;
-        
         for(int i = 0; i < this->size; i++)
         {
-            if (this->data[i] != other.data[i])
+            if(!fabs(this->data[i] - other.data[i]) < 0.0001)
                 return false;
         }
         
         return true;
-        
     }
+    
+
+    
 
 };
+
+
+void test_vector_constructor(void)
+{
+    Vector<double> A;
+    Vector<double> B(0);
+    Vector<double> C({});
+    Vector<int> E;
+    Vector<double> F(1);
+    Vector<double> G({1});
+    Vector<double> H({1,2,3});
+    Vector<double> I({1,2,3});
+    Vector<double> J({1,2,0});
+    Vector<double> K({0,2,3});
+    Vector<double> L = I;
+    assert(A.equals(B));
+    assert(A.equals(C));
+    assert(!A.equals(E));
+    assert(!A.equals(F));
+    assert(!A.equals(G));
+    assert(!F.equals(G));
+    assert(!G.equals(H));
+    assert(H.equals(I));
+    assert(!I.equals(J));
+    assert(!I.equals(K));
+    assert(L.equals(I));
+    assert(&L != &I);
+}
 
 /**
  * @brief Test the code.
  */
 void test(void)
 {
-    //test equals
-    assert(equals(2.0, 2.0));
-    assert(!equals(2.0001, 2.00021));
-    
-    Vector<double> A;
-    Vector<double> B(0);
-    Vector<double> C({});
-    
-    assert(A.equals(B));
-    assert(A.equals(C));
-    
-    
+    test_vector_constructor();
     
     std::cout << "All test passed!" << std::endl;
 }
