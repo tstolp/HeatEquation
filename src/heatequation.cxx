@@ -70,13 +70,10 @@ public:
     
     bool equals(Vector<T> other)
     {
-        std::cout << "1" << std::endl;
         if (this->size != other.size)
             return false;
-        std::cout << "2" << std::endl;
         for(int i = 0; i < this->size; i++)
         {
-            std::cout << this->data[i] << " " << other.data[i] << std::endl;
             if(!fabs(this->data[i] - other.data[i]) < 0.0001)
                 return false;
         }
@@ -89,13 +86,9 @@ public:
 
 };
 
-/**
- * @brief Test the code.
- */
-void test(void)
+
+void test_vector_constructor(void)
 {
-    //test equals
-    
     Vector<double> A;
     Vector<double> B(0);
     Vector<double> C({});
@@ -106,6 +99,7 @@ void test(void)
     Vector<double> I({1,2,3});
     Vector<double> J({1,2,0});
     Vector<double> K({0,2,3});
+    Vector<double> L = I;
     assert(A.equals(B));
     assert(A.equals(C));
     assert(!A.equals(E));
@@ -113,10 +107,19 @@ void test(void)
     assert(!A.equals(G));
     assert(!F.equals(G));
     assert(!G.equals(H));
-    std::cout << "test" << std::endl;
     assert(H.equals(I));
     assert(!I.equals(J));
     assert(!I.equals(K));
+    assert(L.equals(I));
+    assert(&L != &I);
+}
+
+/**
+ * @brief Test the code.
+ */
+void test(void)
+{
+    test_vector_constructor();
     
     std::cout << "All test passed!" << std::endl;
 }
