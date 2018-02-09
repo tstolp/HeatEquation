@@ -129,7 +129,7 @@ public:
         Vector v(size);
         if(size != other.size)
         {
-            std::cout<<"Vectors don't have the same size" << std::endl;
+            throw "Vectors don't have the same size";
         }
         else{
             for (auto i=0; i<other.size; i++)
@@ -149,7 +149,7 @@ public:
         Vector v(size);
         if(size != other.size)
         {
-            std::cout<<"Vectors don't have the same size" << std::endl;
+            throw "Vectors don't have the same size";
         }
         else{
             for (auto i=0; i<other.size; i++)
