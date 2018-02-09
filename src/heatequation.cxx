@@ -119,12 +119,12 @@ public:
     
 
     template<typename A>
-    bool equals(Vector<A> other)
+    bool equals(const Vector<A>& other)
     {        
         return false;
     }
     
-    bool equals(Vector<T> other)
+    bool equals(const Vector<T>& other)
     {
         if (this->size != other.size)
             return false;
