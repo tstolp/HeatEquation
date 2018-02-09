@@ -199,6 +199,46 @@ T dot(const Vector<T>& l, const Vector<T>& r)
     return d;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+template<typename T>
+int cg(
+    const Matrix<T> &A, const Vector<T> &b, Vector<T> &x, T tol, int maxiter)
+{
+    Vector<T> r = b - A * x;
+    Vector<T> p = r;
+    int result = -1;
+    for(int k = 0; k < maxiter; k++)
+    {
+        alpha = dot(r, r) / dot(A * p, p);
+        Vector<T> x_n = x + alpha * p;
+        Vector<T> r_n = r - alpha * A * p;
+        if (dot(r_n, r_n) < tol*tol) {
+            result = k;
+            x = x_n;
+            
+        }
+        T beta = dot(r_n, r_n) / dot(r, r);
+        p = r_n + beta * p;
+        r = r_n;
+        x = x_n;
+    }
+    return result;
+}
+
+
+
+
 void test_vector_constructor(void)
 {
     Vector<double> A;
