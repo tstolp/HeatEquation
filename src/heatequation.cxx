@@ -172,6 +172,13 @@ public:
         std::clog << "minus operator" << std::endl;
         return v;
     }
+
+    Vector operator*(T scalar)
+    {
+        for (auto i=0; i<size; i++)
+            data[i] *= scalar;
+        return *this;
+    }
 };
 
 
