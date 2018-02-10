@@ -140,10 +140,9 @@ public:
         {
             throw "Vectors don't have the same size";
         }
-        else{
-            for (auto i=0; i<other.size; i++)
-                    v.data[i] = data[i] + other.data[i];
-        }
+        for (auto i=0; i<other.size; i++)
+            v.data[i] = data[i] + other.data[i];
+    
 
      //   std::clog << "plus operator" << std::endl;
         return v;
@@ -160,10 +159,10 @@ public:
         {
             throw "Vectors don't have the same size";
         }
-        else{
-            for (auto i=0; i<other.size; i++)
-                    v.data[i] = data[i] - other.data[i];
-        }
+        
+        for (auto i=0; i<other.size; i++)
+             v.data[i] = data[i] - other.data[i];
+        
 
        // std::clog << "minus operator" << std::endl;
         return v;
@@ -400,7 +399,7 @@ public:
         } else if (dim == 1) {
             return size_n;
         } else {
-            throw "Dimention must be 0 or 1";
+            throw "Dimension must be 0 or 1";
         }
     }
  
@@ -433,6 +432,7 @@ int cg(
 
     for(int k = 0; k < maxiter; k++)
     {
+       // std::cout << "cg" << k << " / " << maxiter << std::endl;
         T alpha = dot(r, r) / dot(A * p, p);
         Vector<T> x_n = x + alpha * p;
         Vector<T> r_n = r - alpha * (A * p);
@@ -468,7 +468,6 @@ public:
         dx( 1.0/(m+1)),
         u_0(m)
     {
-            std::cout << "c" << std::endl;
         for (int i = 0; i < m; i++)
         {
             int l = i - 1;
@@ -480,84 +479,13 @@ public:
             if (r < m)
                 M[{i,r}] = -1 * s;
         }
-                         //   u_0.print();
 
         for (int i = 0; i < m; i++)
         {        
             u_0[i] = sin(M_PI * (i + 1) * dx); //+1 because cell centered
         }
-                    //        u_0.print();
     }
     
-    
-    
-
-    /**
-     * @brief Copy constructor.
-     * @param v
-     * @return
-     */
-    Heat1D(const Heat1D& h)
-    : Heat1D(alpha, points, dt)
-    {
-                    std::cout << "c cp" << std::endl;
-    }
-
-    /**
-     * @brief Move constructor.
-     * @param v
-     * @return
-     */
-    Heat1D(Heat1D&& m)
-    : Heat1D(alpha, points, dt)
-    {
-                    std::cout << "c m" << std::endl;
-//TODO
-    }
-    
-    /**
-     * @brief Copy assignment.
-     * @param other
-     */
-    Heat1D& operator=(const Heat1D& other)
-    {
-                    std::cout << "cp" << std::endl;
-        if (this != &other)
-        {
-            //toto delete M u_0
-            M = other.M;
-          //  other.u_0.print();
-            u_0 = other.u_0;
-            points = other.points;
-            alpha = other.alpha;
-            dt = other.dt;
-            dx = other.dx;
-        }
-        return *this;
-    }
-
-    /**
-     * @brief Move assignment.
-     * @param other
-     */
-    Heat1D& operator=(Heat1D&& other)
-    {
-                    std::cout << "m" << std::endl;
-        if (this != &other)
-            {
-            M = other.M;
-            u_0 = other.u_0;
-            points = other.points;
-            alpha = other.alpha;
-            dt = other.dt;
-            dx = other.dx;
-                
-                other.points = 0;
-             //   other.u_0 = nullptr;
-             //   other.M   = nullptr;
-            }
-        return *this;
-    }
     
     Vector<double> exact(double t) const
     {
@@ -585,6 +513,91 @@ public:
         return x;
     }
 };
+
+
+class Heat2D
+{
+private:
+    Matrix<double> M;
+    Vector<double> u_0;
+    int points;
+    double alpha;
+    double dt;
+    double dx;
+    
+public:
+    Heat2D(double p_alpha, int m, double p_dt) :
+        M(m * m,m * m),
+        points(m * m),
+        alpha(p_alpha),
+        dt(p_dt),
+        dx( 1.0/(m+1)),
+        u_0(m * m)
+    {
+        for (int i = 0; i < m; i++)
+        {
+            for (int j = 0; j < m; j++)
+            {
+                int index = i * m + j;
+                int d = i - 1;
+                int u = i + 1;
+                int l = j - 1;
+                int r = j + 1;
+                double s = alpha * dt / (dx * dx);
+                M[{index,index}] = 1 + 2 * 2 * s;
+                if (l >= 0)
+                    M[{index,index - 1}] = -1 * s;
+                if (r < m)
+                    M[{index,index + 1}] = -1 * s;
+                if (d >= 0)
+                    M[{index,index - m}] = -1 * s;
+                if (u < m)
+                    M[{index,index + m}] = -1 * s;
+            }
+        }
+
+        for (int i = 0; i < m; i++)
+        {  
+            double u_i = sin(M_PI * (i + 1) * dx);
+            for (int j = 0; j < m; j++)
+            {      
+                u_0[i * m + j] = u_i + sin(M_PI * (j + 1) * dx); //+1 because cell centered
+            }
+        }
+        u_0.print();
+    }
+    
+    
+    Vector<double> exact(double t) const
+    {
+        Vector<double> result(points);
+        for (int i = 0; i < points; i++)
+        {
+            result[i] = exp(-2*M_PI * M_PI * alpha * t) * u_0[i];
+        }
+
+        return result;
+    }
+    
+    Vector<double> solve(double t_end) const
+    {
+        Vector<double> x = u_0;
+        int steps = t_end / dt - 1;
+        
+        for (int i = 0; i < steps; i++)
+        {
+            std::cout << i << " / " << steps << std::endl;
+            Vector<double> b = x;    
+            if (cg<double>(M, b, x, 0.001, 100) < 0) 
+                throw "Error";
+        }
+        
+        return x;
+    }
+};
+
+
+
 
 void test_vector_constructor(void)
 {
@@ -783,21 +796,31 @@ T error(Vector<T> a, Vector<T> b)
 }
 
 int main(){
-    test();
+  //  test();
     Heat1D test(0.3125, 99, 0.0001);
     
     try {
     Vector<double> a = test.exact(1);
-    std::cout << "a" << std::endl;
-            a.print();
     Vector<double> b = test.solve(1);
 
     std::cout << " " << std::endl;
-    b.print();
     
-       std::cout << error(a,b) << std::endl;
+    std::cout << "Error head1D: " << error(a,b) << std::endl;
+       
+    Heat2D test2(0.3125, 50, 0.01);
+    Vector<double> a2 = test2.exact(0.1);
+    std::cout << " "  << std::endl;
+    a2.print();
+    std::cout << " "  << std::endl;
+    std::cout << "start solving:"  << std::endl;
+    Vector<double> b2 = test2.solve(0.1);
+        std::cout << " "  << std::endl;
+            b2.print();
+        std::cout << "Error head2D: " << error(a2,b2) << std::endl;
     } catch(const char * e) {
             std::cout << e << std::endl;
     }
+    
+
     return 0;
 }
