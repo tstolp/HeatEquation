@@ -145,7 +145,7 @@ public:
                     v.data[i] = data[i] + other.data[i];
         }
 
-        std::clog << "plus operator" << std::endl;
+     //   std::clog << "plus operator" << std::endl;
         return v;
     }
 
@@ -165,7 +165,7 @@ public:
                     v.data[i] = data[i] - other.data[i];
         }
 
-        std::clog << "minus operator" << std::endl;
+       // std::clog << "minus operator" << std::endl;
         return v;
     }
 
@@ -199,7 +199,7 @@ public:
     }
     
 
-    void print()
+    void print() const
     {
         std::cout << "[";
         for(int x = 0; x < size; x++) {
@@ -266,7 +266,7 @@ public:
       data(new T*[m])
     {
         for(int i = 0; i < m; i++)
-            data[i] = new T[n];
+            data[i] = new T[n]{0};
     }
      
     
@@ -358,7 +358,7 @@ public:
         return data[m][n];
     }
     
-    Vector<T> matvec(const Vector<T> &v)
+    Vector<T> matvec(const Vector<T> &v) const
     {
         Vector<T> result(size_m);
         if (v.get_size() != size_n)
@@ -374,12 +374,12 @@ public:
         return result;
     }
 
-    Vector<T> operator*(const Vector<T> &v)
+    Vector<T> operator*(const Vector<T> &v) const
     {
         return matvec(v);
     }
     
-    void print()
+    void print() const
     {
         for(int y = 0; y < size_m; y++) {
             std::cout << "[";
@@ -430,15 +430,15 @@ int cg(
 {
     Vector<T> r = b - A * x;
     Vector<T> p = r;
-    int result = -1;
+
     for(int k = 0; k < maxiter; k++)
     {
         T alpha = dot(r, r) / dot(A * p, p);
         Vector<T> x_n = x + alpha * p;
-        Vector<T> r_n = r - alpha * A * p;
+        Vector<T> r_n = r - alpha * (A * p);
         if (dot(r_n, r_n) < tol*tol) {
-            result = k;
             x = x_n;
+            return k;
             
         }
         T beta = dot(r_n, r_n) / dot(r, r);
@@ -446,23 +446,33 @@ int cg(
         r = r_n;
         x = x_n;
     }
-    return result;
+    return -1;
 }
 
 class Heat1D
 {
 private:
     Matrix<double> M;
+    Vector<double> u_0;
+    int points;
+    double alpha;
+    double dt;
+    double dx;
     
 public:
-    Heat1D(double alpha, int m, double dt) :
-        M(m,m)
+    Heat1D(double p_alpha, int m, double p_dt) :
+        M(m,m),
+        points(m),
+        alpha(p_alpha),
+        dt(p_dt),
+        dx( 1.0/(m+1)),
+        u_0(m)
     {
+            std::cout << "c" << std::endl;
         for (int i = 0; i < m; i++)
         {
             int l = i - 1;
             int r = i + 1;
-            double dx = 1.0/(m+1);
             double s = alpha * dt / (dx * dx);
             M[{i,i}] = 1 + 2 * s;
             if (l >= 0)
@@ -470,7 +480,109 @@ public:
             if (r < m)
                 M[{i,r}] = -1 * s;
         }
+                         //   u_0.print();
+
+        for (int i = 0; i < m; i++)
+        {        
+            u_0[i] = sin(M_PI * (i + 1) * dx); //+1 because cell centered
+        }
+                    //        u_0.print();
+    }
+    
+    
+    
+
+    /**
+     * @brief Copy constructor.
+     * @param v
+     * @return
+     */
+    Heat1D(const Heat1D& h)
+    : Heat1D(alpha, points, dt)
+    {
+                    std::cout << "c cp" << std::endl;
+    }
+
+    /**
+     * @brief Move constructor.
+     * @param v
+     * @return
+     */
+    Heat1D(Heat1D&& m)
+    : Heat1D(alpha, points, dt)
+    {
+                    std::cout << "c m" << std::endl;
+//TODO
+    }
+    
+    /**
+     * @brief Copy assignment.
+     * @param other
+     */
+    Heat1D& operator=(const Heat1D& other)
+    {
+                    std::cout << "cp" << std::endl;
+        if (this != &other)
+        {
+            //toto delete M u_0
+            M = other.M;
+          //  other.u_0.print();
+            u_0 = other.u_0;
+            points = other.points;
+            alpha = other.alpha;
+            dt = other.dt;
+            dx = other.dx;
+        }
+        return *this;
+    }
+
+    /**
+     * @brief Move assignment.
+     * @param other
+     */
+    Heat1D& operator=(Heat1D&& other)
+    {
+                    std::cout << "m" << std::endl;
+        if (this != &other)
+            {
+            M = other.M;
+            u_0 = other.u_0;
+            points = other.points;
+            alpha = other.alpha;
+            dt = other.dt;
+            dx = other.dx;
+                
+                other.points = 0;
+             //   other.u_0 = nullptr;
+             //   other.M   = nullptr;
+            }
+        return *this;
+    }
+    
+    Vector<double> exact(double t) const
+    {
+        Vector<double> result(points);
+        for (int i = 0; i < points; i++)
+        {
+            result[i] = exp(-M_PI * M_PI * alpha * t) * u_0[i];
+        }
+
+        return result;
+    }
+    
+    Vector<double> solve(double t_end) const
+    {
+        Vector<double> x = u_0;
+        int steps = t_end / dt - 1;
         
+        for (int i = 0; i < steps; i++)
+        {
+            Vector<double> b = x;    
+            if (cg<double>(M, b, x, 0.0001, 100) < 0) 
+                throw "Error";
+        }
+        
+        return x;
     }
 };
 
@@ -658,8 +770,34 @@ void test(void)
     std::cout << "All test passed!" << std::endl;
 }
 
+template<typename T>
+T error(Vector<T> a, Vector<T> b)
+{
+    T result;
+    for (int i = 0; i < a.get_size(); i++)
+    {
+        result += fabs(a[i] - b[i]);
+    }
+    return result;
+    
+}
+
 int main(){
     test();
+    Heat1D test(0.3125, 99, 0.0001);
+    
+    try {
+    Vector<double> a = test.exact(1);
+    std::cout << "a" << std::endl;
+            a.print();
+    Vector<double> b = test.solve(1);
 
+    std::cout << " " << std::endl;
+    b.print();
+    
+       std::cout << error(a,b) << std::endl;
+    } catch(const char * e) {
+            std::cout << e << std::endl;
+    }
     return 0;
 }
