@@ -49,15 +49,12 @@ endif()
 
 
 # Create an executable named 'add-vectors' from the source file 'add-vectors.cxx'
-add_executable(hello_world src/hello_world.cxx)
 add_executable(heatequation src/heatequation.cxx)
 
 # Define C++11 standard
-set_property(TARGET hello_world PROPERTY CXX_STANDARD 11)
 set_property(TARGET heatequation PROPERTY CXX_STANDARD 11)
 
 # Create an additional target for assignment submission
-add_assignment(hello_world src/hello_world.cxx)
 add_assignment(heatequation src/heatequation.cxx)
 
 

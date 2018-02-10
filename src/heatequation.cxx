@@ -5,14 +5,31 @@
 #include <initializer_list>
 #include <memory>
 
+template<typename T, typename S>
+bool equals(const T a, const S b)
+{
+    return false;
+}
+
+template<typename T>
+bool equals(const T a, const T b)
+{
+    return a == b;
+}
+
+bool equals(const double a, const double b)
+{
+    return fabs(a - b) < 0.0001;  
+}
+
 
 template<typename T>
 class Vector {
 private:
-
-public:
     T* data;
     int size;
+public:
+
     /**
      * @brief Default constructor for a vector.
      * @return An vector with size 0.
@@ -27,13 +44,13 @@ public:
      * @param n the size of the vector.
      * @return A vector with size n.
      */
-    Vector(int n)
+    Vector(const int n)
     : data(new T[n]),
       size(n)
     { }
 
 
-    Vector(std::initializer_list<T> list)
+    Vector(const std::initializer_list<T> list)
     : Vector((int)list.size())
     {
         std::uninitialized_copy(list.begin(), list.end(), data);
@@ -77,31 +94,11 @@ public:
     }
 
 
-    template<typename A>
-    bool equals(const Vector<A>& other)
-    {        
-        return false;
-    }
-    
-    bool equals(const Vector<T>& other)
-    {
-        if (this->size != other.size)
-            return false;
-        for(int i = 0; i < this->size; i++)
-        {
-            if(!fabs(this->data[i] - other.data[i]) < 0.0001)
-                return false;
-        }
-        
-        return true;
-    }    
-
-
     /**
      * @brief Copy assignment.
      * @param other
      */
-    Vector& operator=(const Vector& other)
+    Vector<T>& operator=(const Vector<T>& other)
     {
         if (this != &other)
             {
@@ -118,7 +115,7 @@ public:
      * @brief Move assignment.
      * @param other
      */
-    Vector& operator=(Vector&& other)
+    Vector<T>& operator=(Vector<T>&& other)
     {
         if (this != &other)
             {
@@ -136,7 +133,7 @@ public:
      * @brief plus operator.
      * @param other
      */
-    Vector operator+(const Vector& other) const
+    Vector<T> operator+(const Vector<T>& other) const
     {
         Vector v(size);
         if(size != other.size)
@@ -156,7 +153,7 @@ public:
      * @brief minus operator.
      * @param other
      */
-    Vector operator-(const Vector& other) const
+    Vector<T> operator-(const Vector<T>& other) const
     {
         Vector v(size);
         if(size != other.size)
@@ -172,14 +169,67 @@ public:
         return v;
     }
 
-    Vector operator*(const Vector& scalar)
+  /**  Vector operator*(const Vector<T>& scalar) //TODO 
+    {
+        Vector v(size);
+        for (auto i=0; i<size; i++)
+            v.data[i] = scalar*data[i];
+        return v;
+    }**/
+    
+    Vector<T> operator*(const T scalar) const
     {
         Vector v(size);
         for (auto i=0; i<size; i++)
             v.data[i] = scalar*data[i];
         return v;
     }
+    
+    T& operator[] (const int index) const
+    {
+        if (size < index || index < 0)
+            throw "Index out of bounds";
+
+        return data[index];
+    }
+    
+    int get_size() const 
+    { 
+        return size; 
+    }
+    
+
+    void print()
+    {
+        std::cout << "[";
+        for(int x = 0; x < size; x++) {
+            if (x != 0)
+                std::cout << ", ";
+            std::cout << data[x];
+        }
+        std::cout << "]" << std::endl;        
+    }   
 };
+
+template <typename T>
+bool equals(const Vector<T>& a, const Vector<T>& b)
+{
+    if (a.get_size() != b.get_size())
+        return false;
+    for(int i = 0; i < a.get_size(); i++)
+    {
+        if(!equals(a[i], b[i]))
+            return false;
+    }
+       
+    return true;
+}
+    
+template <typename T>
+Vector<T> operator*(const T scalar, const Vector<T> &v) {
+    return v * scalar;
+}
+
 
 
 /**
@@ -191,6 +241,11 @@ public:
 template<typename T>
 T dot(const Vector<T>& l, const Vector<T>& r)
 {
+    if(l.get_size() != r.get_size())
+    {
+        throw "Vectors don't have the same size";
+    }
+        
     // Calculate the dot product
     double d=0;
     for (auto i=0; i<l.size; i++)
@@ -303,7 +358,7 @@ public:
         //TODO check sizes;
         for (int i=0; i<v.size_m; i++)
             for (int j=0; i<v.size_n; j++)
-                result.data[i] += data[i][j] * v[j];
+                result[i] += data[i][j] * v[j];
         
     }
 
@@ -388,22 +443,48 @@ void test_vector_constructor(void)
     Vector<double> G({1});
     Vector<double> H({1,2,3});
     Vector<double> I({1,2,3});
-    Vector<double> J({1,2,0});
-    Vector<double> K({0,2,3});
+    Vector<double> J({1,2,3.1});
+    Vector<double> K({0.9,2,3});
     Vector<double> L = I;
-    assert(A.equals(B));
-    assert(A.equals(C));
-    assert(!A.equals(E));
-    assert(!A.equals(F));
-    assert(!A.equals(G));
-    assert(!F.equals(G));
-    assert(!G.equals(H));
-    assert(H.equals(I));
-    assert(!I.equals(J));
-    assert(!I.equals(K));
-    assert(L.equals(I));
+    assert(A.get_size() == 0);
+    assert(B.get_size() == 0);
+    assert(C.get_size() == 0);
+    assert(F.get_size() == 1);
+    assert(H.get_size() == 3);
+    assert(equals(A,B));
+    assert(equals(A,C));
+    assert(!equals(A,E));
+    
+    assert(!equals(A,F));
+    assert(!equals(A,G));
+    assert(!equals(F,G));
+    assert(!equals(G,H));
+    assert(equals(H,I));
+    assert(!equals(I,J));
+    assert(!equals(I,K));
+    assert(equals(L,I));
     assert(&L != &I);
+    I[0] = 0.9;
+    assert(!equals(L,I));
+    assert(equals(I,K));
     // std::cout << dot(H, I) << std::endl;
+}
+
+void test_vector_operations(void)
+{
+    Vector<double> A({1,2,3});
+    Vector<double> B({2,4,-1});
+    
+    Vector<double> expected({3,6,2});
+    assert(equals(expected, A+B));
+    
+    expected = Vector<double>({-1,-2,4});
+    assert(equals(expected, A-B));
+    
+    expected = Vector<double>({4, 8, -2});
+    assert(equals(expected, 2.0 * B));
+    assert(equals(expected, B * 2.0));
+    
 }
 
 void test_matrix(void)
@@ -419,6 +500,7 @@ void test_matrix(void)
 void test(void)
 {
     test_vector_constructor();
+    test_vector_operations();
     test_matrix();
     std::cout << "All test passed!" << std::endl;
 }
