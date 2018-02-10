@@ -187,7 +187,7 @@ public:
     
     T& operator[] (const int index) const
     {
-        if (size < index || index < 0)
+        if (index >= size || index < 0)
             throw "Index out of bounds";
 
         return data[index];
@@ -260,21 +260,15 @@ private:
     int size_n;
     T** data;
 public:
-    Matrix(const int m, const int n):
-     size_n(n),
-     size_m(m),
-     data(new T*[m])
+    Matrix(const int m, const int n)
+    : size_n(n),
+      size_m(m),
+      data(new T*[m])
     {
-    for(int i = 0; i < m; i++)
-        data[i] = new T[n];
+        for(int i = 0; i < m; i++)
+            data[i] = new T[n];
     }
      
-    T& operator[] (const std::initializer_list<int> index) {
-        if (index.size() != 2)
-            throw "Needs 2 elements for the index";
-        //TODO check size_mn
-        return data[index.begin()[0]][index.begin()[1]];
-    }
     
     ~Matrix()
     {
@@ -290,7 +284,6 @@ public:
      * @param v
      * @return
      */
-
     Matrix(const Matrix<T>& m)
     : Matrix<T>(m.size_m, m.size_n)
     {
@@ -352,14 +345,33 @@ public:
         return *this;
     }
     
+    T& operator[] (const std::initializer_list<int> index) 
+    {
+        if (index.size() != 2)
+            throw "Needs 2 elements for the index";
+            
+        int m = index.begin()[0];
+        int n = index.begin()[1];
+        if (m < 0 || n < 0 || m >= size_m || n >= size_n)
+            throw "Index out of bounds";
+            
+        return data[m][n];
+    }
+    
     Vector<T> matvec(const Vector<T> &v)
     {
-        Vector<T> result(v.size);
-        //TODO check sizes;
-        for (int i=0; i<v.size_m; i++)
-            for (int j=0; i<v.size_n; j++)
+        Vector<T> result(size_m);
+        if (v.get_size() != size_n)
+            throw "Wrong size";
+            
+        for (int i=0; i< size_m; i++) {
+            result[i] = 0;
+            for (int j=0; j< size_n; j++) {
                 result[i] += data[i][j] * v[j];
+            }
+        }
         
+        return result;
     }
 
     Vector<T> operator*(const Vector<T> &v)
@@ -380,8 +392,37 @@ public:
         }
         
     }
+    
+    int get_size(int dim) const 
+    { 
+        if (dim == 0) {
+            return size_m;
+        } else if (dim == 1) {
+            return size_n;
+        } else {
+            throw "Dimention must be 0 or 1";
+        }
+    }
  
 };
+
+template <typename T>
+bool equals(const Matrix<T>& a, const Matrix<T>& b)
+{
+    if (a.get_size(0)!= b.get_size(0) || a.get_size(1) != b.get_size(1))
+        return false;
+    for(int i = 0; i < a.get_size(0); i++)
+    {
+        for(int j = 0; j < a.get_size(1); j++)
+        {
+            if(!equals(a[i][j], b[i][j]))
+                return false;
+        }
+    }
+       
+    return true;
+}
+
 
 template<typename T>
 int cg(
@@ -467,7 +508,6 @@ void test_vector_constructor(void)
     I[0] = 0.9;
     assert(!equals(L,I));
     assert(equals(I,K));
-    // std::cout << dot(H, I) << std::endl;
 }
 
 void test_vector_operations(void)
@@ -540,8 +580,70 @@ void test_vector_operations(void)
 void test_matrix(void)
 {
     Matrix<double> test(3,4);
-    test[{1,2}] = 2.0;
-    test.print();
+    assert(equals(3, test.get_size(0)));
+    assert(equals(4, test.get_size(1)));
+    assert(equals(0.0, test[{1,2}]));
+    assert(equals(0.0, test[{0,0}]));
+    test[{0,0}] = -1.1;
+    test[{2,3}] = 1.0;
+    assert(equals(-1.1, test[{0,0}]));
+    assert(equals(1.0, test[{2,3}]));
+    
+    bool exception = false;
+    try {
+        test[{3,0}] = 1.0;
+    } catch (char const* e) {
+        exception = true;
+    }
+    assert(exception);
+    exception = false;
+
+    try {
+        test[{0,4}] = 1.0;
+    } catch (char const* e) {
+        exception = true;
+    }
+    assert(exception);
+}
+
+void test_matrix_vector(void)
+{
+    Matrix<double> M(3,4);
+    Vector<double> v({1,2,3,4});
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            M[{i,j}] = i + j;
+        }
+    }
+    
+    Vector<double> expected({20, 30, 40});
+        
+        
+    Vector<double> result = M*v;
+    result.print();
+
+    assert(equals(expected, M*v));
+    
+    Vector<double> v2({1,2,3});
+    bool exception = false;
+    try {
+        M*v2;
+    } catch (char const* e) {
+        exception = true;
+    }
+        assert(exception);
+        
+    exception = false;
+    Vector<double> v3({1,2,1,1,3});
+    try {
+        M*v3;
+    } catch (char const* e) {
+        exception = true;
+    }
+    assert(exception);
+    
 }
 
 /**
@@ -552,6 +654,7 @@ void test(void)
     test_vector_constructor();
     test_vector_operations();
     test_matrix();
+    test_matrix_vector();
     std::cout << "All test passed!" << std::endl;
 }
 
