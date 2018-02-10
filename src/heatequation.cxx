@@ -248,8 +248,8 @@ T dot(const Vector<T>& l, const Vector<T>& r)
         
     // Calculate the dot product
     double d=0;
-    for (auto i=0; i<l.size; i++)
-        d += l.data[i]*r.data[i];
+    for (auto i=0; i<l.get_size(); i++)
+        d += l[i]*r[i];
     return d;
 }
 
@@ -484,7 +484,57 @@ void test_vector_operations(void)
     expected = Vector<double>({4, 8, -2});
     assert(equals(expected, 2.0 * B));
     assert(equals(expected, B * 2.0));
+
+    assert(equals(7.0, dot(A,B)));
     
+    bool exception = false;
+    Vector<double> C({2,4});
+    try {
+        A+C;
+    } catch (char const* e) {
+        exception = true;
+    }
+    assert(exception);
+    exception = false;
+    
+    try {
+        C+A;
+    } catch (char const* e) {
+        exception = true;
+    }
+    assert(exception);
+    exception = false;
+    
+    try {
+        A-C;
+    } catch (char const* e) {
+        exception = true;
+    }
+    assert(exception);
+    exception = false;
+    
+    try {
+        C-A;
+    } catch (char const* e) {
+        exception = true;
+    }
+    assert(exception);
+    exception = false;
+    
+    try {
+        dot(A,C);
+    } catch (char const* e) {
+        exception = true;
+    }
+    assert(exception);
+    exception = false;
+    
+    try {
+        dot(C,A);
+    } catch (char const* e) {
+        exception = true;
+    }
+    assert(exception);    
 }
 
 void test_matrix(void)
