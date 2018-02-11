@@ -107,12 +107,12 @@ public:
     Vector<T>& operator=(const Vector<T>& other)
     {
         if (this != &other)
-            {
-                delete[] data;
-                size = other.size;
-                data   = new double[other.size];
-                for (int i=0; i<other.size; i++)
-                    data[i] = other.data[i];
+        {
+            delete[] data;
+            size = other.size;
+            data = new double[other.size];
+            for (int i=0; i<other.size; i++)
+                data[i] = other.data[i];
             }
         return *this;
     }
@@ -124,13 +124,13 @@ public:
     Vector<T>& operator=(Vector<T>&& other)
     {
         if (this != &other)
-            {
-                delete[] data;
-                size = other.size;
-                data   = other.data;
-                other.size = 0;
-                other.data   = nullptr;
-            }
+        {
+            delete[] data;
+            size = other.size;
+            data = other.data;
+            other.size = 0;
+            other.data = nullptr;
+        }
         return *this;
     }
 
@@ -281,10 +281,10 @@ public:
      */
     Matrix(const Matrix<T>& m)
     : Matrix<T>(m.size_m, m.size_n)
-    {
+    {                        
         for (const auto& element : m.data) {
-                data[element.first] = element.second; 
-            }
+            data[element.first] = element.second; 
+        }
     }
 
     /**
@@ -293,16 +293,15 @@ public:
      * @return
      */
     Matrix(Matrix<T>&& m)
-    : 
-      size_m(m.size_m),
+    : size_m(m.size_m),
       size_n(m.size_n)
     {
         m.size_m = 0;
         m.size_n = 0;
         for (const auto& element : m.data) {
             data[element.first] = element.second; 
-        } //TODO
-     //   m.data = nullptr;
+        }
+        m.data.clear();
     }
     
     /**
@@ -313,8 +312,11 @@ public:
     {
         if (this != &other)
         {
-            //TODO check size
-        for (const auto& element : other.data) {
+            if (size_m != other.size_m || size_n != other.size_n)
+                throw "Wrong size";
+                
+            data.clear();
+            for (const auto& element : other.data) {
                 data[element.first] = element.second; 
             }
         }
@@ -328,28 +330,29 @@ public:
     Matrix<T>& operator=(Matrix<T>&& other)
     {
         if (this != &other)
-            {
-           //     delete[] data;
-                //TODO check size
-                //TODO delete current
-        for (const auto& element : other.data) {
+        {
+            if (size_m != other.size_m || size_n != other.size_n)
+                throw "Wrong size";
+                
+            data.clear();
+            for (const auto& element : other.data) {
                 data[element.first] = element.second; 
             }
                 
-                other.size_m = 0;
-                other.size_n = 0;
-                other.data   = nullptr;
-            }
+            other.size_m = 0;
+            other.size_n = 0;
+            other.data.clear();
+        }
         return *this;
     }
     
-    T& operator[] (const std::initializer_list<int> index) 
+    T& operator[] (const array<int, 2> index)
     {
         if (index.size() != 2)
             throw "Needs 2 elements for the index";
             
-        int m = index.begin()[0];
-        int n = index.begin()[1];
+        int m = index[0];
+        int n = index[1];
         if (m < 0 || n < 0 || m >= size_m || n >= size_n)
             throw "Index out of bounds";
         return data[{m,n}];
@@ -365,7 +368,7 @@ public:
             result[i] = 0;
             
         for (const auto& element : data) {
-                result[element.first[0]] += element.second * v[element.first[1]]; 
+            result[element.first[0]] += element.second * v[element.first[1]]; 
         }        
         
         return result;
@@ -414,6 +417,7 @@ bool equals(const Matrix<T>& a, const Matrix<T>& b)
 {
     if (a.get_size(0)!= b.get_size(0) || a.get_size(1) != b.get_size(1))
         return false;
+        
     for(int i = 0; i < a.get_size(0); i++)
     {
         for(int j = 0; j < a.get_size(1); j++)
@@ -444,8 +448,8 @@ int cg(
         T dot_r_n = dot(r,r);
         if (dot_r_n < tol*tol) {
             return k;
-            
         }
+        
         T beta = dot_r_n / dot_r;
         p = r + beta * p;
     }
@@ -527,7 +531,6 @@ private:
     double alpha;
     double dt;
     double dx;
-    int m_l;
     
 public:
     Heat2D(double p_alpha, int m, double p_dt) :
@@ -536,8 +539,7 @@ public:
         alpha(p_alpha),
         dt(p_dt),
         dx( 1.0/(m+1)),
-        u_0(m * m),
-        m_l(m)
+        u_0(m * m)
     {
         for (int i = 0; i < m; i++)
         {
@@ -600,6 +602,7 @@ public:
         return x;
     }
 };
+
 
 
 
