@@ -27,10 +27,10 @@ bool equals(const double a, const double b)
 template<typename T>
 class Vector {
 private:
-
+    T* data;
     int size;
 public:
-    T* data;
+
     /**
      * @brief Default constructor for a vector.
      * @return An vector with size 0.
@@ -202,8 +202,8 @@ public:
     
     T& operator[] (const int index) const
     {
-     //   if (index >= size || index < 0)
-      //      throw "Index out of bounds";
+        if (index >= size || index < 0)
+            throw "Index out of bounds";
 
         return data[index];
     }
@@ -391,21 +391,14 @@ public:
     
     T matvec_element(int index, const Vector<T> & v, const std::initializer_list<int> non_zero_indexes) const
     {
-        T result = 0;
-    //    print();
-    //    std::cout<<""<<std::endl;
-    //    v.print();
-    //    std::cout<<"index: " << index <<  std::endl;
-   
+        T result = 0;   
                         
         for (auto j : non_zero_indexes)
  //      for (int j = 0; j < size_n; j++)
         {
-     //               std::cout<<j << " " << result<<std::endl;
             if (j < 0 || j >= size_n)
                 continue;
-            result += data[index][j] * v.data[j];
-    //                std::cout<<result<<std::endl;
+            result += data[index][j] * v[j];
         }
      
         return result;
@@ -466,57 +459,30 @@ template<typename T>
 int cg2(
     const Matrix<T> &A, const Vector<T> &b, Vector<T> &x, T tol, int maxiter)
 {
- //   std::cout << "start" << std::endl;
     clock_t begin = clock();    
     int size = x.get_size();
     Vector<T> temp(size);
     Vector<T> r(size);
     Vector<T> p(size); 
     int offset = sqrt(size);
-     //        std::cout << "START TEST" << std::endl;
-         for (int i = 0; i < size; i++)
-        {
-            double value = b[i] - A.matvec_element(i, x, {i - offset, i - 1, i, i + 1, i + offset});
-            r[i] = value;
-            p[i] = value;
-            
-     //       temp[i] = A.matvec_element(i, x, {i - offset, i - 1, i, i + 1, i + offset});
-        }
-        
-     //   A.print();
-     //    std::cout  << std::endl;
-     //   x.print();
-     //            std::cout  << std::endl;
-    //    temp.print();
-     //   throw " test";
-    //Vector<T> x_n(size);
-    //Vector<T> r_n(size); 
- 
-    
-    clock_t end = clock();
-  double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
- // std::cout << elapsed_secs << std::endl;
-  
+    for (int i = 0; i < size; i++)
+    {
+        double value = b[i] - A.matvec_element(i, x, {i - offset, i - 1, i, i + 1, i + offset});
+        r[i] = value;
+        p[i] = value;
+    }
+
   
     for(int k = 0; k < maxiter; k++)
     {
-  //        std::cout << "g" << std::endl;
-   //     begin = clock(); 
-       // std::cout << "cg" << k << " / " << maxiter << std::endl;
         for (int i = 0; i < size; i++)
         { 
             temp[i] = A.matvec_element(i, p, {i - offset, i - 1, i, i + 1, i + offset});
         }
 
-//    end = clock();
-//   elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
- // std::cout << elapsed_secs << std::endl;
-        
         T dot_r_r = dot(r, r);
         T alpha =  dot_r_r / dot(temp, p);
         
-
-  
         for (int i = 0; i < size; i++)
         {
             x[i] = x[i] + alpha * p[i];
@@ -534,14 +500,9 @@ int cg2(
         {
             p[i] = r[i] + beta * p[i];
         }
-  //                               end = clock();
-  // elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
- // std::cout << elapsed_secs << std::endl;
-  
 
     }
     
-
     return -1;
     
 }
@@ -552,51 +513,30 @@ template<typename T>
 int cg1(
     const Matrix<T> &A, const Vector<T> &b, Vector<T> &x, T tol, int maxiter)
 {
-    std::cout << "start" << std::endl;
     clock_t begin = clock();    
     int size = x.get_size();
     Vector<T> temp(size);
     Vector<T> r(size);
     Vector<T> p(size); 
-         for (int i = 0; i < size; i++)
-        {
-               int    index =i;
-            double value = b[i] - A.matvec_element(i, x, {index - 1, index, index + 1});
-            r[i] = value;
-            p[i] = value;
-        }
+    for (int i = 0; i < size; i++)
+    {
+        double value = b[i] - A.matvec_element(i, x, {i - 1, i, i + 1});
+        r[i] = value;
+        p[i] = value;
+    }
 
-
-
-    //Vector<T> x_n(size);
-    //Vector<T> r_n(size); 
- 
-    
-    clock_t end = clock();
-  double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
- // std::cout << elapsed_secs << std::endl;
-  
   
     for(int k = 0; k < maxiter; k++)
     {
-  //        std::cout << "g" << std::endl;
-   //     begin = clock(); 
-       // std::cout << "cg" << k << " / " << maxiter << std::endl;
         for (int i = 0; i < size; i++)
         {
-                           int    index = i;
-            temp[i] = A.matvec_element(i, p, { index - 1, index, index + 1});
+            temp[i] = A.matvec_element(i, p, { i - 1, i, i + 1});
         }
         
-//    end = clock();
-//   elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
- // std::cout << elapsed_secs << std::endl;
         
         T dot_r_r = dot(r, r);
         T alpha =  dot_r_r / dot(temp, p);
         
-
-  
         for (int i = 0; i < size; i++)
         {
             x[i] = x[i] + alpha * p[i];
@@ -614,11 +554,6 @@ int cg1(
         {
             p[i] = r[i] + beta * p[i];
         }
-  //                               end = clock();
-  // elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
- // std::cout << elapsed_secs << std::endl;
-  
-
     }
     
 
@@ -637,7 +572,6 @@ int cg(
 
     for(int k = 0; k < maxiter; k++)
     {
-       // std::cout << "cg" << k << " / " << maxiter << std::endl;
         T alpha = dot(r, r) / dot(A * p, p);
         Vector<T> x_n = x + alpha * p;
         Vector<T> r_n = r - alpha * (A * p);
@@ -718,7 +652,7 @@ public:
         return x;
     }
     
-        Vector<double> solve2(double t_end) const
+    Vector<double> solve2(double t_end) const
     {
         Vector<double> x = u_0;
         int steps = t_end / dt - 1;
@@ -793,14 +727,11 @@ public:
     
     Vector<double> exact(double t) const
     {
-      //  u_0.print();
         Vector<double> result(points);
         for (int i = 0; i < points; i++)
         {
             result[i] = exp(-2*M_PI * M_PI * alpha * t) * u_0[i];
         }
-        std::cout<<"exact" << std::endl;
-      //  result.print();
         return result;
     }
     
@@ -812,40 +743,24 @@ public:
         
         for (int i = 0; i < steps; i++)
         {
-  //          std::cout << i << " / " << steps << std::endl;
-            Vector<double> b = x;
- // clock_t begin = clock();    
+            Vector<double> b = x;  
             if (cg<double>(M, b, x, 0.001, 100) < 0) 
                 throw "Error";
-  //                clock_t end = clock();
- // double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-  //std::cout << elapsed_secs << std::endl;
         }
-   //     std::cout<<"sol gc" << std::endl;
-    //            x.print();
+
         return x;
     }
     
      Vector<double> solve2(double t_end) const
     {
-
-
         Vector<double> x = u_0;
         int steps = t_end / dt ;
-    //      std::cout << " steps : " << steps << std::endl;
         for (int i = 0; i < steps; i++)
         {
-  //          std::cout << i << " / " << steps << std::endl;
-            Vector<double> b = x;
- // clock_t begin = clock();    
+            Vector<double> b = x;   
             if (cg2<double>(M, b, x, 0.001, 100) < 0) 
                 throw "Error";
- //                 clock_t end = clock();
- // double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
- // std::cout << elapsed_secs << std::endl;
         }
-     //   std::cout<<"sol gc2" << std::endl;
-  //      x.print();
         return x;
     }
 };
