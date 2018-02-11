@@ -154,11 +154,6 @@ public:
         return v;
     }
     
-    T add_element(int index, const Vector<T>&other) const
-    {
-        return data[index] + other.data[index];
-    }
-
      /**
      * @brief minus operator.
      * @param other
@@ -179,18 +174,6 @@ public:
         return v;
     }
     
-    T subtract_element(int index, const Vector<T>&other) const
-    {
-        return data[index] - other.data[index];
-    }
-
-  /**  Vector operator*(const Vector<T>& scalar) //TODO 
-    {
-        Vector v(size);
-        for (auto i=0; i<size; i++)
-            v.data[i] = scalar*data[i];
-        return v;
-    }**/
     
     Vector<T> operator*(const T scalar) const
     {
@@ -200,10 +183,6 @@ public:
         return v;
     }
     
-    T multiply_element(int index, const T scalar) const
-    {
-        return data[index] *scalar;
-    }
     
     T& operator[] (const int index) const
     {
@@ -278,7 +257,6 @@ class Matrix {
 private:
     int size_m;
     int size_n;
-   // T** data;
     std::map<array<int, 2>, T> data;
 public:
     Matrix(const int m, const int n)
@@ -454,21 +432,22 @@ int cg(
 {
     Vector<T> r = b - A * x;
     Vector<T> p = r;
-
+    Vector<T> A_p;
     for(int k = 0; k < maxiter; k++)
     {
-        T alpha = dot(r, r) / dot(A * p, p);
-        Vector<T> x_n = x + alpha * p;
-        Vector<T> r_n = r - alpha * (A * p);
-        if (dot(r_n, r_n) < tol*tol) {
-            x = x_n;
+        T dot_r = dot(r,r);
+        
+        A_p = A * p;
+        T alpha = dot_r / dot(A_p, p);
+        x = x + alpha * p;
+        r = r - alpha * A_p;
+        T dot_r_n = dot(r,r);
+        if (dot_r_n < tol*tol) {
             return k;
             
         }
-        T beta = dot(r_n, r_n) / dot(r, r);
-        p = r_n + beta * p;
-        r = r_n;
-        x = x_n;
+        T beta = dot_r_n / dot_r;
+        p = r + beta * p;
     }
     return -1;
 }
