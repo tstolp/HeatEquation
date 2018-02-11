@@ -5,6 +5,11 @@
 #include <initializer_list>
 #include <memory>
 #include <ctime>
+#include <map>
+#include <iterator>
+#include <array>
+
+using std::array;
 
 template<typename T, typename S>
 bool equals(const T a, const S b)
@@ -273,15 +278,14 @@ class Matrix {
 private:
     int size_m;
     int size_n;
-    T** data;
+   // T** data;
+    std::map<array<int, 2>, T> data;
 public:
     Matrix(const int m, const int n)
     : size_n(n),
-      size_m(m),
-      data(new T*[m])
+      size_m(m)
     {
-        for(int i = 0; i < m; i++)
-            data[i] = new T[n]{0};
+
     }
      
     
@@ -289,9 +293,7 @@ public:
     {
         size_m = 0;
         size_n = 0;
-        for(int i = 0; i < size_m; i++)
-            delete[] data[i];
-        delete[] data;
+     //   delete[] data;
     }
     
     /**
@@ -302,9 +304,9 @@ public:
     Matrix(const Matrix<T>& m)
     : Matrix<T>(m.size_m, m.size_n)
     {
-        for (int i=0; i<m.size_m; i++)
-            for (int j=0; i<m.size_n; j++)
-                data[i][j] = m.data[i][j];
+        for (const auto& element : m.data) {
+                data[element.first] = element.second; 
+            }
     }
 
     /**
@@ -313,13 +315,16 @@ public:
      * @return
      */
     Matrix(Matrix<T>&& m)
-    : data(m.data),
+    : 
       size_m(m.size_m),
       size_n(m.size_n)
     {
         m.size_m = 0;
         m.size_n = 0;
-        m.data = nullptr;
+        for (const auto& element : m.data) {
+            data[element.first] = element.second; 
+        } //TODO
+     //   m.data = nullptr;
     }
     
     /**
@@ -331,9 +336,9 @@ public:
         if (this != &other)
         {
             //TODO check size
-            for (int i=0; i<other.size_m; i++)
-                for (int j=0; i<other.size_n; j++)
-                    data[i][j] = other.data[i][j];
+        for (const auto& element : other.data) {
+                data[element.first] = element.second; 
+            }
         }
         return *this;
     }
@@ -346,12 +351,12 @@ public:
     {
         if (this != &other)
             {
-                delete[] data;
+           //     delete[] data;
                 //TODO check size
-                for (int i=0; i<other.size_m; i++)
-                    for (int j=0; i<other.size_n; j++)
-                        data[i][j] = other.data[i][j];
-                data = other.data;
+                //TODO delete current
+        for (const auto& element : other.data) {
+                data[element.first] = element.second; 
+            }
                 
                 other.size_m = 0;
                 other.size_n = 0;
@@ -369,8 +374,7 @@ public:
         int n = index.begin()[1];
         if (m < 0 || n < 0 || m >= size_m || n >= size_n)
             throw "Index out of bounds";
-            
-        return data[m][n];
+        return data[{m,n}];
     }
     
     Vector<T> matvec(const Vector<T> &v) const
@@ -379,31 +383,15 @@ public:
         if (v.get_size() != size_n)
             throw "Wrong size";
             
-        for (int i=0; i< size_m; i++) {
+        for (int i=0; i< size_m; i++) 
             result[i] = 0;
-            for (int j=0; j< size_n; j++) {
-                result[i] += data[i][j] * v[j];
-            }
-        }
+            
+        for (const auto& element : data) {
+                result[element.first[0]] += element.second * v[element.first[1]]; 
+        }        
         
         return result;
     }
-    
-    T matvec_element(int index, const Vector<T> & v, const std::initializer_list<int> non_zero_indexes) const
-    {
-        T result = 0;   
-                        
-        for (auto j : non_zero_indexes)
- //      for (int j = 0; j < size_n; j++)
-        {
-            if (j < 0 || j >= size_n)
-                continue;
-            result += data[index][j] * v[j];
-        }
-     
-        return result;
-    }
-    
 
     Vector<T> operator*(const Vector<T> &v) const
     {
@@ -417,7 +405,13 @@ public:
             for(int x = 0; x < size_n; x++) {
                 if (x != 0)
                     std::cout << ", ";
-                std::cout << data[y][x];
+                    
+                auto search = data.find({y,x});;
+                if(search != data.end()) {
+                    std::cout << search->second;
+                } else {
+                    std::cout << 0;
+                }
             }
             std::cout << "]" << std::endl;
         }
@@ -453,115 +447,6 @@ bool equals(const Matrix<T>& a, const Matrix<T>& b)
        
     return true;
 }
-
-
-template<typename T>
-int cg2(
-    const Matrix<T> &A, const Vector<T> &b, Vector<T> &x, T tol, int maxiter)
-{
-    clock_t begin = clock();    
-    int size = x.get_size();
-    Vector<T> temp(size);
-    Vector<T> r(size);
-    Vector<T> p(size); 
-    int offset = sqrt(size);
-    for (int i = 0; i < size; i++)
-    {
-        double value = b[i] - A.matvec_element(i, x, {i - offset, i - 1, i, i + 1, i + offset});
-        r[i] = value;
-        p[i] = value;
-    }
-
-  
-    for(int k = 0; k < maxiter; k++)
-    {
-        for (int i = 0; i < size; i++)
-        { 
-            temp[i] = A.matvec_element(i, p, {i - offset, i - 1, i, i + 1, i + offset});
-        }
-
-        T dot_r_r = dot(r, r);
-        T alpha =  dot_r_r / dot(temp, p);
-        
-        for (int i = 0; i < size; i++)
-        {
-            x[i] = x[i] + alpha * p[i];
-            r[i] = r[i] - alpha * temp[i];
-        }
-
-        T dot_rn_rn = dot(r, r);
-        if (dot_rn_rn < tol*tol) {
-            return k;
-            
-        }
-        T beta = dot_rn_rn / dot_r_r;
-        p = r + beta * p;
-        for (int i = 0; i < size; i++)
-        {
-            p[i] = r[i] + beta * p[i];
-        }
-
-    }
-    
-    return -1;
-    
-}
-
-
-
-template<typename T>
-int cg1(
-    const Matrix<T> &A, const Vector<T> &b, Vector<T> &x, T tol, int maxiter)
-{
-    clock_t begin = clock();    
-    int size = x.get_size();
-    Vector<T> temp(size);
-    Vector<T> r(size);
-    Vector<T> p(size); 
-    for (int i = 0; i < size; i++)
-    {
-        double value = b[i] - A.matvec_element(i, x, {i - 1, i, i + 1});
-        r[i] = value;
-        p[i] = value;
-    }
-
-  
-    for(int k = 0; k < maxiter; k++)
-    {
-        for (int i = 0; i < size; i++)
-        {
-            temp[i] = A.matvec_element(i, p, { i - 1, i, i + 1});
-        }
-        
-        
-        T dot_r_r = dot(r, r);
-        T alpha =  dot_r_r / dot(temp, p);
-        
-        for (int i = 0; i < size; i++)
-        {
-            x[i] = x[i] + alpha * p[i];
-            r[i] = r[i] - alpha * temp[i];
-        }
-
-        T dot_rn_rn = dot(r, r);
-        if (dot_rn_rn < tol*tol) {
-            return k;
-            
-        }
-        T beta = dot_rn_rn / dot_r_r;
-        p = r + beta * p;
-        for (int i = 0; i < size; i++)
-        {
-            p[i] = r[i] + beta * p[i];
-        }
-    }
-    
-
-    return -1;
-    
-}
-
-
 
 template<typename T>
 int cg(
@@ -651,21 +536,6 @@ public:
         
         return x;
     }
-    
-    Vector<double> solve2(double t_end) const
-    {
-        Vector<double> x = u_0;
-        int steps = t_end / dt - 1;
-        
-        for (int i = 0; i < steps; i++)
-        {
-            Vector<double> b = x;    
-            if (cg1<double>(M, b, x, 0.0001, 100) < 0) 
-                throw "Error";
-        }
-        
-        return x;
-    }
 };
 
 
@@ -744,23 +614,10 @@ public:
         for (int i = 0; i < steps; i++)
         {
             Vector<double> b = x;  
-            if (cg<double>(M, b, x, 0.001, 100) < 0) 
+            if (cg<double>(M, b, x, 0.0001, 100) < 0) 
                 throw "Error";
         }
 
-        return x;
-    }
-    
-     Vector<double> solve2(double t_end) const
-    {
-        Vector<double> x = u_0;
-        int steps = t_end / dt ;
-        for (int i = 0; i < steps; i++)
-        {
-            Vector<double> b = x;   
-            if (cg2<double>(M, b, x, 0.001, 100) < 0) 
-                throw "Error";
-        }
         return x;
     }
 };
@@ -914,7 +771,11 @@ void test_matrix_vector(void)
     
     Vector<double> expected({20, 30, 40});
         
-        
+    std::cout << "start" << std::endl;
+    M.print();
+    std::cout << std::endl;
+    v.print();
+    std::cout << std::endl;
     Vector<double> result = M*v;
     result.print();
 
@@ -965,37 +826,23 @@ T error(Vector<T> a, Vector<T> b)
 }
 
 int main(){
-  //  test();
-    Heat1D test(0.3125, 10, 0.0001);
+    test();
+    Heat1D test(0.3125, 100, 0.0001);
     
     try {
- /*   Vector<double> a = test.exact(01);
+    Vector<double> a = test.exact(1);
     Vector<double> b = test.solve(1);
-    Vector<double> c = test.solve2(1);
-    a.print();
-    std::cout << " " << std::endl;
-    b.print();
-        std::cout << " " << std::endl;
-    c.print();
-    std::cout << "Error head1D: " << error(a,b) << std::endl;
-    std::cout << "Error head1D2: " << error(c,b) << std::endl;
-  */  //return 0;
-  int size = 30;
-    Heat2D test2(0.3125, size, 0.001);
-    Vector<double> a2 = test2.exact(0.5);
-   //     Vector<double> b2 = test2.solve(0.5);
-        Vector<double> c2 = test2.solve2(0.5);
-    std::cout << " "  << std::endl;
-  //  a2.print();
-    std::cout << " "  << std::endl;
-    std::cout << "start solving:"  << std::endl;
 
-        std::cout << " "  << std::endl;
-     //       b2.print();
-  //      std::cout << "Error head2D: " << error(a2,b2) << "  " << error(a2,b2) / (size * size) << std::endl;
-        std::cout << "Error head2D: " << error(a2,c2) << "  " << error(a2,c2) / (size * size) << std::endl;
-   //             std::cout << "Error head2D 2: " << error(c2,b2) << std::endl;
-       //     Vector<double> dif = c2 - b2;
+    std::cout << "Error head1D: " << error(a,b) << std::endl;
+
+    Heat2D test2(0.3125, 99, 0.001);
+    Vector<double> a2 = test2.exact(0.5);
+    
+    std::cout << "start solving:"  << std::endl;
+    Vector<double> b2 = test2.solve(0.5);
+
+    std::cout << "Error head2D: " << error(a2,b2) << "  " << error(a2,b2) / (99 * 99) << std::endl;
+       //     Vector<double> dif = a2 - b2;
         /**    for (int i = 0; i < size; i ++)
             {
                 std::cout  << std::endl;
