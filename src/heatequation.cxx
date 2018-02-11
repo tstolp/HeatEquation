@@ -27,10 +27,10 @@ bool equals(const double a, const double b)
 template<typename T>
 class Vector {
 private:
-    T* data;
+
     int size;
 public:
-
+    T* data;
     /**
      * @brief Default constructor for a vector.
      * @return An vector with size 0.
@@ -202,8 +202,8 @@ public:
     
     T& operator[] (const int index) const
     {
-        if (index >= size || index < 0)
-            throw "Index out of bounds";
+     //   if (index >= size || index < 0)
+      //      throw "Index out of bounds";
 
         return data[index];
     }
@@ -389,12 +389,26 @@ public:
         return result;
     }
     
-    T matvec_element(int index, const Vector<T> & v) const
+    T matvec_element(int index, const Vector<T> & v, const std::initializer_list<int> non_zero_indexes) const
     {
         T result = 0;
-        for (int j=0; j< size_n; j++) {
-            result += data[index][j] * v[j];
+    //    print();
+    //    std::cout<<""<<std::endl;
+    //    v.print();
+    //    std::cout<<"index: " << index <<  std::endl;
+   
+                        
+        for (auto j : non_zero_indexes)
+ //      for (int j = 0; j < size_n; j++)
+        {
+     //               std::cout<<j << " " << result<<std::endl;
+            if (j < 0 || j >= size_n)
+                continue;
+            result += data[index][j] * v.data[j];
+    //                std::cout<<result<<std::endl;
         }
+     
+        return result;
     }
     
 
@@ -452,23 +466,57 @@ template<typename T>
 int cg2(
     const Matrix<T> &A, const Vector<T> &b, Vector<T> &x, T tol, int maxiter)
 {
-    Vector<T> r = b - A * x;
-    Vector<T> p = r; 
+ //   std::cout << "start" << std::endl;
+    clock_t begin = clock();    
     int size = x.get_size();
+    Vector<T> temp(size);
+    Vector<T> r(size);
+    Vector<T> p(size); 
+    int offset = sqrt(size);
+     //        std::cout << "START TEST" << std::endl;
+         for (int i = 0; i < size; i++)
+        {
+            double value = b[i] - A.matvec_element(i, x, {i - offset, i - 1, i, i + 1, i + offset});
+            r[i] = value;
+            p[i] = value;
+            
+     //       temp[i] = A.matvec_element(i, x, {i - offset, i - 1, i, i + 1, i + offset});
+        }
+        
+     //   A.print();
+     //    std::cout  << std::endl;
+     //   x.print();
+     //            std::cout  << std::endl;
+    //    temp.print();
+     //   throw " test";
     //Vector<T> x_n(size);
     //Vector<T> r_n(size); 
-    Vector<T> temp(size); 
+ 
+    
+    clock_t end = clock();
+  double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+ // std::cout << elapsed_secs << std::endl;
+  
+  
     for(int k = 0; k < maxiter; k++)
     {
+  //        std::cout << "g" << std::endl;
+   //     begin = clock(); 
        // std::cout << "cg" << k << " / " << maxiter << std::endl;
         for (int i = 0; i < size; i++)
-        {
-            temp[i] = A.matvec_element(i, p);
+        { 
+            temp[i] = A.matvec_element(i, p, {i - offset, i - 1, i, i + 1, i + offset});
         }
+
+//    end = clock();
+//   elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+ // std::cout << elapsed_secs << std::endl;
         
         T dot_r_r = dot(r, r);
         T alpha =  dot_r_r / dot(temp, p);
         
+
+  
         for (int i = 0; i < size; i++)
         {
             x[i] = x[i] + alpha * p[i];
@@ -486,11 +534,97 @@ int cg2(
         {
             p[i] = r[i] + beta * p[i];
         }
+  //                               end = clock();
+  // elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+ // std::cout << elapsed_secs << std::endl;
+  
+
     }
+    
+
     return -1;
     
 }
 
+
+
+template<typename T>
+int cg1(
+    const Matrix<T> &A, const Vector<T> &b, Vector<T> &x, T tol, int maxiter)
+{
+    std::cout << "start" << std::endl;
+    clock_t begin = clock();    
+    int size = x.get_size();
+    Vector<T> temp(size);
+    Vector<T> r(size);
+    Vector<T> p(size); 
+         for (int i = 0; i < size; i++)
+        {
+               int    index =i;
+            double value = b[i] - A.matvec_element(i, x, {index - 1, index, index + 1});
+            r[i] = value;
+            p[i] = value;
+        }
+
+
+
+    //Vector<T> x_n(size);
+    //Vector<T> r_n(size); 
+ 
+    
+    clock_t end = clock();
+  double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+ // std::cout << elapsed_secs << std::endl;
+  
+  
+    for(int k = 0; k < maxiter; k++)
+    {
+  //        std::cout << "g" << std::endl;
+   //     begin = clock(); 
+       // std::cout << "cg" << k << " / " << maxiter << std::endl;
+        for (int i = 0; i < size; i++)
+        {
+                           int    index = i;
+            temp[i] = A.matvec_element(i, p, { index - 1, index, index + 1});
+        }
+        
+//    end = clock();
+//   elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+ // std::cout << elapsed_secs << std::endl;
+        
+        T dot_r_r = dot(r, r);
+        T alpha =  dot_r_r / dot(temp, p);
+        
+
+  
+        for (int i = 0; i < size; i++)
+        {
+            x[i] = x[i] + alpha * p[i];
+            r[i] = r[i] - alpha * temp[i];
+        }
+
+        T dot_rn_rn = dot(r, r);
+        if (dot_rn_rn < tol*tol) {
+            return k;
+            
+        }
+        T beta = dot_rn_rn / dot_r_r;
+        p = r + beta * p;
+        for (int i = 0; i < size; i++)
+        {
+            p[i] = r[i] + beta * p[i];
+        }
+  //                               end = clock();
+  // elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+ // std::cout << elapsed_secs << std::endl;
+  
+
+    }
+    
+
+    return -1;
+    
+}
 
 
 
@@ -572,7 +706,7 @@ public:
     Vector<double> solve(double t_end) const
     {
         Vector<double> x = u_0;
-        int steps = t_end / dt - 1;
+        int steps = t_end / dt ;
         
         for (int i = 0; i < steps; i++)
         {
@@ -592,7 +726,7 @@ public:
         for (int i = 0; i < steps; i++)
         {
             Vector<double> b = x;    
-            if (cg2<double>(M, b, x, 0.0001, 100) < 0) 
+            if (cg1<double>(M, b, x, 0.0001, 100) < 0) 
                 throw "Error";
         }
         
@@ -610,6 +744,7 @@ private:
     double alpha;
     double dt;
     double dx;
+    int m_l;
     
 public:
     Heat2D(double p_alpha, int m, double p_dt) :
@@ -618,7 +753,8 @@ public:
         alpha(p_alpha),
         dt(p_dt),
         dx( 1.0/(m+1)),
-        u_0(m * m)
+        u_0(m * m),
+        m_l(m)
     {
         for (int i = 0; i < m; i++)
         {
@@ -650,38 +786,66 @@ public:
                 u_0[i * m + j] = u_i + sin(M_PI * (j + 1) * dx); //+1 because cell centered
             }
         }
-        u_0.print();
+        
+
     }
     
     
     Vector<double> exact(double t) const
     {
+      //  u_0.print();
         Vector<double> result(points);
         for (int i = 0; i < points; i++)
         {
             result[i] = exp(-2*M_PI * M_PI * alpha * t) * u_0[i];
         }
-
+        std::cout<<"exact" << std::endl;
+      //  result.print();
         return result;
     }
     
     Vector<double> solve(double t_end) const
     {
+            
         Vector<double> x = u_0;
-        int steps = t_end / dt - 1;
+        int steps = t_end / dt ;
         
         for (int i = 0; i < steps; i++)
         {
-            std::cout << i << " / " << steps << std::endl;
+  //          std::cout << i << " / " << steps << std::endl;
             Vector<double> b = x;
-  clock_t begin = clock();    
+ // clock_t begin = clock();    
+            if (cg<double>(M, b, x, 0.001, 100) < 0) 
+                throw "Error";
+  //                clock_t end = clock();
+ // double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+  //std::cout << elapsed_secs << std::endl;
+        }
+   //     std::cout<<"sol gc" << std::endl;
+    //            x.print();
+        return x;
+    }
+    
+     Vector<double> solve2(double t_end) const
+    {
+
+
+        Vector<double> x = u_0;
+        int steps = t_end / dt ;
+    //      std::cout << " steps : " << steps << std::endl;
+        for (int i = 0; i < steps; i++)
+        {
+  //          std::cout << i << " / " << steps << std::endl;
+            Vector<double> b = x;
+ // clock_t begin = clock();    
             if (cg2<double>(M, b, x, 0.001, 100) < 0) 
                 throw "Error";
-                  clock_t end = clock();
-  double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-  std::cout << elapsed_secs << std::endl;
+ //                 clock_t end = clock();
+ // double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+ // std::cout << elapsed_secs << std::endl;
         }
-        
+     //   std::cout<<"sol gc2" << std::endl;
+  //      x.print();
         return x;
     }
 };
@@ -890,7 +1054,7 @@ int main(){
     Heat1D test(0.3125, 10, 0.0001);
     
     try {
-    Vector<double> a = test.exact(01);
+ /*   Vector<double> a = test.exact(01);
     Vector<double> b = test.solve(1);
     Vector<double> c = test.solve2(1);
     a.print();
@@ -900,29 +1064,33 @@ int main(){
     c.print();
     std::cout << "Error head1D: " << error(a,b) << std::endl;
     std::cout << "Error head1D2: " << error(c,b) << std::endl;
-  //  return 0;
-    Heat2D test2(0.3125, 99, 0.001);
+  */  //return 0;
+  int size = 30;
+    Heat2D test2(0.3125, size, 0.001);
     Vector<double> a2 = test2.exact(0.5);
+   //     Vector<double> b2 = test2.solve(0.5);
+        Vector<double> c2 = test2.solve2(0.5);
     std::cout << " "  << std::endl;
-    a2.print();
+  //  a2.print();
     std::cout << " "  << std::endl;
     std::cout << "start solving:"  << std::endl;
-    Vector<double> b2 = test2.solve(0.5);
+
         std::cout << " "  << std::endl;
-            b2.print();
-        std::cout << "Error head2D: " << error(a2,b2) << std::endl;
-        
-            Vector<double> dif = a2 - b2;
-            for (int i = 0; i < 10; i ++)
+     //       b2.print();
+  //      std::cout << "Error head2D: " << error(a2,b2) << "  " << error(a2,b2) / (size * size) << std::endl;
+        std::cout << "Error head2D: " << error(a2,c2) << "  " << error(a2,c2) / (size * size) << std::endl;
+   //             std::cout << "Error head2D 2: " << error(c2,b2) << std::endl;
+       //     Vector<double> dif = c2 - b2;
+        /**    for (int i = 0; i < size; i ++)
             {
                 std::cout  << std::endl;
-                for (int j = 0; j < 10; j ++)
+                for (int j = 0; j < size; j ++)
             {
-                std::cout << dif[i*10 + j] << ", ";
+                std::cout << dif[i*size + j] << ", ";
                 
             }
                 
-            }
+            }**/
     } catch(const char * e) {
             std::cout << e << std::endl;
     }
