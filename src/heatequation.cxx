@@ -491,6 +491,8 @@ public:
         {        
             u_0[i] = sin(M_PI * (i + 1) * dx); //+1 because cell centered
         }
+           //     M.print();
+               // u_0.print();
     }
     
     
@@ -603,7 +605,89 @@ public:
     }
 };
 
+template<int n> class Heat
+{
+private:
+    Matrix<double> M;
+    Vector<double> u_0;
+    int points;
+    double alpha;
+    double dt;
+    double dx;
+    
+public:
+    Heat(double p_alpha, int m, double p_dt) :
+        M(pow(m,n), pow(m,n)),
+        points(pow(m,n)),
+        alpha(p_alpha),
+        dt(p_dt),
+        dx( 1.0/(m+1)),
+        u_0(pow(m,n))
+    {
+        int x[n] {0}; //keep track of the coordinate
+        double s = alpha * dt / (dx * dx);     
+                    
+        for (int i = 0; i < points; i++)
+        {
+            u_0[i] = 0;
+            for (int j = 0; j < n; j++)
+            {
+                u_0[i] += sin(M_PI * (x[j] + 1) * dx);
+            }
+            
 
+                
+            M[{i,i}] = 1 + 2 * n * s;
+                
+            for (int j = 0; j < n; j++) {
+                int index_l = i - pow(m, j);
+                int index_h = i + pow(m, j);
+                if (x[j] - 1 >= 0)
+                    M[{i,index_l}] = -1 * s; 
+                if (x[j] + 1 < m)
+                    M[{i,index_h}] = -1 * s; 
+            }
+            
+            //update coordinate
+            for (int j = 0; j < n; j++)
+            {
+                x[j]++;
+                if (x[j] == m)
+                    x[j] = 0;
+                else
+                    break;
+            }
+        }
+    //    M.print();
+      //  u_0.print();
+    }
+    
+    
+    Vector<double> exact(double t) const
+    {
+        Vector<double> result(points);
+        for (int i = 0; i < points; i++)
+        {
+            result[i] = exp(-n*M_PI * M_PI * alpha * t) * u_0[i];
+        }
+        return result;
+    }
+    
+    Vector<double> solve(double t_end) const
+    {            
+        Vector<double> x = u_0;
+        int steps = t_end / dt ;
+        
+        for (int i = 0; i < steps; i++)
+        {
+            Vector<double> b = x;  
+            if (cg<double>(M, b, x, 0.01, 1000) < 0) 
+                throw "Error";
+        }
+
+        return x;
+    }
+};
 
 
 
@@ -752,14 +836,6 @@ void test_matrix_vector(void)
     }
     
     Vector<double> expected({20, 30, 40});
-        
-    std::cout << "start" << std::endl;
-    M.print();
-    std::cout << std::endl;
-    v.print();
-    std::cout << std::endl;
-    Vector<double> result = M*v;
-    result.print();
 
     assert(equals(expected, M*v));
     
@@ -809,8 +885,8 @@ T error(Vector<T> a, Vector<T> b)
 
 int main(){
     test();
-    Heat1D test(0.3125, 100, 0.0001);
-    
+
+    Heat1D test(0.3125, 99, 0.0001);
     try {
     Vector<double> a = test.exact(1);
     Vector<double> b = test.solve(1);
@@ -824,21 +900,33 @@ int main(){
     Vector<double> b2 = test2.solve(0.5);
 
     std::cout << "Error head2D: " << error(a2,b2) << "  " << error(a2,b2) / (99 * 99) << std::endl;
-       //     Vector<double> dif = a2 - b2;
-        /**    for (int i = 0; i < size; i ++)
-            {
-                std::cout  << std::endl;
-                for (int j = 0; j < size; j ++)
-            {
-                std::cout << dif[i*size + j] << ", ";
-                
-            }
-                
-            }**/
+    
+    Heat<1> test3(0.3125, 99, 0.0001);
+    Vector<double> a3 = test3.exact(1);
+    Vector<double> b3 = test3.solve(1);
+
+    std::cout << "Error head1: " << error(a3,b3) << std::endl;
+    std::cout << "diff head1 head1D: " << error(a,a3) << std::endl;
+    std::cout << "diff head1 head1D: " << error(b,b3) << std::endl;
+    
+    
+    Heat<2> test4(0.3125, 99, 0.001);
+    Vector<double> a4= test4.exact(0.5);
+    Vector<double> b4 = test4.solve(0.5);
+
+    std::cout << "Error head2: " << error(a4,b4) << std::endl;
+    std::cout << "diff head2 head2D: " << error(a2,a4) << std::endl;
+    std::cout << "diff head2 head2D: " << error(b2,b4) << std::endl;
+    
+     Heat<3> test5(0.3125, 99, 0.01);
+    Vector<double> a5 = test5.exact(0.25);
+    Vector<double> b5 = test5.solve(0.25);
+
+    std::cout << "Error head3: " << error(a5,b5) << "  " << error(a5,b5) / (99 * 99 * 99) << std::endl;
     } catch(const char * e) {
             std::cout << e << std::endl;
     }
-    
+
 
     return 0;
 }
