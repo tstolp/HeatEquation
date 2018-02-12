@@ -271,7 +271,6 @@ public:
     {
         size_m = 0;
         size_n = 0;
-     //   delete[] data;
     }
     
     /**
@@ -498,13 +497,7 @@ public:
     
     Vector<double> exact(double t) const
     {
-        Vector<double> result(points);
-        for (int i = 0; i < points; i++)
-        {
-            result[i] = exp(-M_PI * M_PI * alpha * t) * u_0[i];
-        }
-
-        return result;
+        return exp(-M_PI * M_PI * alpha * t) * u_0;
     }
     
     Vector<double> solve(double t_end) const
@@ -580,12 +573,7 @@ public:
     
     Vector<double> exact(double t) const
     {
-        Vector<double> result(points);
-        for (int i = 0; i < points; i++)
-        {
-            result[i] = exp(-2*M_PI * M_PI * alpha * t) * u_0[i];
-        }
-        return result;
+        return exp(-2*M_PI * M_PI * alpha * t) * u_0;
     }
     
     Vector<double> solve(double t_end) const
@@ -665,12 +653,7 @@ public:
     
     Vector<double> exact(double t) const
     {
-        Vector<double> result(points);
-        for (int i = 0; i < points; i++)
-        {
-            result[i] = exp(-n*M_PI * M_PI * alpha * t) * u_0[i];
-        }
-        return result;
+        return exp(-n*M_PI * M_PI * alpha * t) * u_0;
     }
     
     Vector<double> solve(double t_end) const
