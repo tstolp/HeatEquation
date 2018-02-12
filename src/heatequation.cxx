@@ -1,3 +1,9 @@
+/**
+ * @brief tw3720tu 2017 Final-project heat-equation
+ * @authors Jens Langerak 4317327, Thomas Stolp 4377907
+ */
+ 
+
 #include <iostream>
 #include <typeinfo>
 #include <math.h>
@@ -46,7 +52,7 @@ public:
     { }
 
     /**
-     * @brief Create a vector of size n
+     * @brief Create a vector of size n.
      * @param n the size of the vector.
      * @return A vector with size n.
      */
@@ -56,6 +62,11 @@ public:
     { }
 
 
+    /**
+     * @brief Create a vector with the elements from the list.
+     * @param list values for the vector.
+     * @return A vector with the elements from the list.
+     */
     Vector(const std::initializer_list<T> list)
     : Vector((int)list.size())
     {
@@ -66,9 +77,8 @@ public:
     /**
      * @brief Copy constructor.
      * @param v
-     * @return
+     * @return A copy of v.
      */
-
     Vector(const Vector<T>& v)
     : Vector(v.size)
     {
@@ -79,7 +89,7 @@ public:
     /**
      * @brief Move constructor.
      * @param v
-     * @return
+     * @return A new vector with the values from v.
      */
     Vector(Vector&& v)
     : data(v.data),
@@ -136,8 +146,9 @@ public:
 
 
     /**
-     * @brief plus operator.
+     * @brief Add two vectors.
      * @param other
+     * @return The sum of this and other.
      */
     Vector<T> operator+(const Vector<T>& other) const
     {
@@ -149,14 +160,13 @@ public:
         for (auto i=0; i<other.size; i++)
             v.data[i] = data[i] + other.data[i];
     
-
-     //   std::clog << "plus operator" << std::endl;
         return v;
     }
     
      /**
-     * @brief minus operator.
+     * @brief Subtract two vectors.
      * @param other
+     * @return A new vector with the values this-other.
      */
     Vector<T> operator-(const Vector<T>& other) const
     {
@@ -169,12 +179,14 @@ public:
         for (auto i=0; i<other.size; i++)
              v.data[i] = data[i] - other.data[i];
         
-
-       // std::clog << "minus operator" << std::endl;
         return v;
     }
     
-    
+    /**
+     * @brief Multiply the vector with a scalar.
+     * @param scalar
+     * @return A new vector with the values this * scalar.
+     */
     Vector<T> operator*(const T scalar) const
     {
         Vector v(size);
@@ -183,7 +195,11 @@ public:
         return v;
     }
     
-    
+    /**
+     * @brief Get element at index.
+     * @param index index of the requested element.
+     * @return A reference to the requested element.
+     */
     T& operator[] (const int index) const
     {
         if (index >= size || index < 0)
@@ -192,6 +208,10 @@ public:
         return data[index];
     }
     
+    /**
+     * @brief Get the size of the vector.
+     * @return The size of the vector.
+     */
     int get_size() const 
     { 
         return size; 
@@ -223,7 +243,14 @@ bool equals(const Vector<T>& a, const Vector<T>& b)
        
     return true;
 }
+
     
+/**
+ * @brief Multiply v with scalar. 
+ * @param scalar
+ * @param v
+ * @return A new vector with the values v * scalar;
+ */
 template <typename T>
 Vector<T> operator*(const T scalar, const Vector<T> &v) {
     return v * scalar;
@@ -236,7 +263,6 @@ Vector<T> operator*(const T scalar, const Vector<T> &v) {
 * @param two vectors of the same length.
 * @return the dot product.
 */
-
 template<typename T>
 T dot(const Vector<T>& l, const Vector<T>& r)
 {
@@ -259,6 +285,12 @@ private:
     int size_n;
     std::map<array<int, 2>, T> data;
 public:
+    /**
+     * @brief Create a new matrix with size (m,n).
+     * @param m number of rows
+     * @param n number of collumns.
+     * @return A matrix with size (m,n)
+     */
     Matrix(const int m, const int n)
     : size_n(n),
       size_m(m)
@@ -266,7 +298,9 @@ public:
 
     }
      
-    
+    /**
+     * @brief Destroy the matrix.
+     */
     ~Matrix()
     {
         size_m = 0;
@@ -275,8 +309,8 @@ public:
     
     /**
      * @brief Copy constructor.
-     * @param v
-     * @return
+     * @param m
+     * @return A copy of m.
      */
     Matrix(const Matrix<T>& m)
     : Matrix<T>(m.size_m, m.size_n)
@@ -288,8 +322,8 @@ public:
 
     /**
      * @brief Move constructor.
-     * @param v
-     * @return
+     * @param m
+     * @return A new matrix with the values of m.
      */
     Matrix(Matrix<T>&& m)
     : size_m(m.size_m),
@@ -345,6 +379,11 @@ public:
         return *this;
     }
     
+    /**
+     * @brief Get the element at position index.
+     * @param index An array with two values {m,n}.
+     * @return A reference to the element at position {m,n}.
+     */
     T& operator[] (const array<int, 2> index)
     {
         if (index.size() != 2)
@@ -354,9 +393,15 @@ public:
         int n = index[1];
         if (m < 0 || n < 0 || m >= size_m || n >= size_n)
             throw "Index out of bounds";
+            
         return data[{m,n}];
     }
     
+    /**
+     * @brief Multiply this matrix with vector v.
+     * @param v a vector.
+     * @return A vector that is the result of this matrix multiplied with v.
+     */
     Vector<T> matvec(const Vector<T> &v) const
     {
         Vector<T> result(size_m);
@@ -366,6 +411,7 @@ public:
         for (int i=0; i< size_m; i++) 
             result[i] = 0;
             
+        // use only the non-zero elements from the matrix.
         for (const auto& element : data) {
             result[element.first[0]] += element.second * v[element.first[1]]; 
         }        
@@ -373,6 +419,11 @@ public:
         return result;
     }
 
+    /**
+     * @brief Multiply this matrix with vector v.
+     * @param v a vector.
+     * @return A vector that is the result of this matrix multiplied with v.
+     */
     Vector<T> operator*(const Vector<T> &v) const
     {
         return matvec(v);
@@ -398,6 +449,11 @@ public:
         
     }
     
+    /**
+     * @brief Returns the size in dimension dim.
+     * @param dim 0 or 1.
+     * @return The size in the give dimension.
+     */
     int get_size(int dim) const 
     { 
         if (dim == 0) {
@@ -412,7 +468,7 @@ public:
 };
 
 template <typename T>
-bool equals(const Matrix<T>& a, const Matrix<T>& b)
+bool equals(Matrix<T>& a, Matrix<T>& b)
 {
     if (a.get_size(0)!= b.get_size(0) || a.get_size(1) != b.get_size(1))
         return false;
@@ -421,7 +477,7 @@ bool equals(const Matrix<T>& a, const Matrix<T>& b)
     {
         for(int j = 0; j < a.get_size(1); j++)
         {
-            if(!equals(a[i][j], b[i][j]))
+            if(!equals(a[{i,j}], b[{i,j}]))
                 return false;
         }
     }
@@ -429,9 +485,22 @@ bool equals(const Matrix<T>& a, const Matrix<T>& b)
     return true;
 }
 
+/**
+ * @brief Conjugate Gradient method. Solve Ax = b for x.
+ * @param A a symmetric positive definite matrix.
+ * @param b
+ * @param x initial guess for x. And outputs the result.
+ * @param tol the absolute tolerance for the residu.
+ * @param maxiter maximum allowed number of iterations.
+ * @return number of needed iterations.
+ */
 template<typename T>
 int cg(
-    const Matrix<T> &A, const Vector<T> &b, Vector<T> &x, T tol, int maxiter)
+    const Matrix<T> &A, 
+    const Vector<T> &b, 
+    Vector<T> &x, 
+    T tol, 
+    int maxiter)
 {
     Vector<T> r = b - A * x;
     Vector<T> p = r;
@@ -460,20 +529,25 @@ class Heat1D
 private:
     Matrix<double> M;
     Vector<double> u_0;
-    int points;
     double alpha;
     double dt;
     double dx;
     
 public:
+    /**
+     * @brief Create an object that can solve the heat equation in 1D.
+     * @param p_alpha the diffusion coefficient.
+     * @param m the number of points per dimension.
+     * @param p_dt the timestep.
+     */
     Heat1D(double p_alpha, int m, double p_dt) :
         M(m,m),
-        points(m),
         alpha(p_alpha),
         dt(p_dt),
         dx( 1.0/(m+1)),
         u_0(m)
     {
+        // Calculate matrix M
         for (int i = 0; i < m; i++)
         {
             int l = i - 1;
@@ -486,20 +560,28 @@ public:
                 M[{i,r}] = -1 * s;
         }
 
+        // Calculate u_0
         for (int i = 0; i < m; i++)
         {        
             u_0[i] = sin(M_PI * (i + 1) * dx); //+1 because cell centered
         }
-           //     M.print();
-               // u_0.print();
     }
     
-    
+    /**
+     * @brief Calculate the exact solution at time t.
+     * @param t 
+     * @return The exect solution at time t.
+     */
     Vector<double> exact(double t) const
     {
         return exp(-M_PI * M_PI * alpha * t) * u_0;
     }
     
+    /**
+     * @brief Calculate the numerical solution at time t_end.
+     * @param t_end
+     * @return The numerical solution at time t_end.
+     */
     Vector<double> solve(double t_end) const
     {
         Vector<double> x = u_0;
@@ -522,20 +604,25 @@ class Heat2D
 private:
     Matrix<double> M;
     Vector<double> u_0;
-    int points;
     double alpha;
     double dt;
     double dx;
     
 public:
+    /**
+     * @brief Create an object that can solve the heat equation in 2D.
+     * @param p_alpha the diffusion coefficient.
+     * @param m the number of points per dimension.
+     * @param p_dt the timestep.
+     */
     Heat2D(double p_alpha, int m, double p_dt) :
         M(m * m,m * m),
-        points(m * m),
         alpha(p_alpha),
         dt(p_dt),
         dx( 1.0/(m+1)),
         u_0(m * m)
     {
+        // Calculate matrix M
         for (int i = 0; i < m; i++)
         {
             for (int j = 0; j < m; j++)
@@ -558,24 +645,32 @@ public:
             }
         }
 
+        // Calculate u_0
         for (int i = 0; i < m; i++)
         {  
-            double u_i = sin(M_PI * (i + 1) * dx);
+            double u_i = sin(M_PI * (i + 1) * dx); //+1 because cell centered
             for (int j = 0; j < m; j++)
             {      
                 u_0[i * m + j] = u_i + sin(M_PI * (j + 1) * dx); //+1 because cell centered
             }
         }
-        
-
     }
     
-    
+    /**
+     * @brief Calculate the exact solution at time t.
+     * @param t 
+     * @return The exect solution at time t.
+     */ 
     Vector<double> exact(double t) const
     {
         return exp(-2*M_PI * M_PI * alpha * t) * u_0;
     }
     
+    /**
+     * @brief Calculate the numerical solution at time t_end.
+     * @param t_end
+     * @return The numerical solution at time t_end.
+     */
     Vector<double> solve(double t_end) const
     {
             
@@ -585,7 +680,7 @@ public:
         for (int i = 0; i < steps; i++)
         {
             Vector<double> b = x;  
-            if (cg<double>(M, b, x, 0.0001, 100) < 0) 
+            if (cg<double>(M, b, x, 0.01, 1000) < 0) 
                 throw "Error";
         }
 
@@ -598,35 +693,41 @@ template<int n> class Heat
 private:
     Matrix<double> M;
     Vector<double> u_0;
-    int points;
     double alpha;
     double dt;
     double dx;
     
 public:
+    /**
+     * @brief Create an object that can solve the heat equation in nD.
+     * @param p_alpha the diffusion coefficient.
+     * @param m the number of points per dimension.
+     * @param p_dt the timestep.
+     */
     Heat(double p_alpha, int m, double p_dt) :
         M(pow(m,n), pow(m,n)),
-        points(pow(m,n)),
         alpha(p_alpha),
         dt(p_dt),
         dx( 1.0/(m+1)),
         u_0(pow(m,n))
     {
+        int points = pow(m,n);
         int x[n] {0}; //keep track of the coordinate
         double s = alpha * dt / (dx * dx);     
-                    
+                
+        // iterate over all the point while keeping track of the coordinates of the points.
         for (int i = 0; i < points; i++)
         {
+            // calculate u_0
             u_0[i] = 0;
             for (int j = 0; j < n; j++)
             {
                 u_0[i] += sin(M_PI * (x[j] + 1) * dx);
             }
             
-
-                
+            
+            // calculate row i in matrix M.
             M[{i,i}] = 1 + 2 * n * s;
-                
             for (int j = 0; j < n; j++) {
                 int index_l = i - pow(m, j);
                 int index_h = i + pow(m, j);
@@ -636,7 +737,7 @@ public:
                     M[{i,index_h}] = -1 * s; 
             }
             
-            //update coordinate
+            // update coordinate.
             for (int j = 0; j < n; j++)
             {
                 x[j]++;
@@ -646,16 +747,23 @@ public:
                     break;
             }
         }
-    //    M.print();
-      //  u_0.print();
     }
     
-    
+    /**
+     * @brief Calculate the exact solution at time t.
+     * @param t 
+     * @return The exect solution at time t.
+     */
     Vector<double> exact(double t) const
     {
         return exp(-n*M_PI * M_PI * alpha * t) * u_0;
     }
     
+    /**
+     * @brief Calculate the numerical solution at time t_end.
+     * @param t_end
+     * @return The numerical solution at time t_end.
+     */
     Vector<double> solve(double t_end) const
     {            
         Vector<double> x = u_0;
@@ -674,6 +782,11 @@ public:
 
 
 
+
+
+/**************************************************************
+ * TEST CODE                                                  *
+ **************************************************************/
 void test_vector_constructor(void)
 {
     Vector<double> A;
@@ -901,11 +1014,11 @@ int main(){
     std::cout << "diff head2 head2D: " << error(a2,a4) << std::endl;
     std::cout << "diff head2 head2D: " << error(b2,b4) << std::endl;
     
-     Heat<3> test5(0.3125, 99, 0.01);
+     Heat<3> test5(0.3125, 49, 0.01);
     Vector<double> a5 = test5.exact(0.25);
     Vector<double> b5 = test5.solve(0.25);
 
-    std::cout << "Error head3: " << error(a5,b5) << "  " << error(a5,b5) / (99 * 99 * 99) << std::endl;
+    std::cout << "Error head3: " << error(a5,b5) << "  " << error(a5,b5) / (49 * 49 * 49) << std::endl;
     } catch(const char * e) {
             std::cout << e << std::endl;
     }
