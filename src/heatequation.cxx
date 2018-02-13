@@ -590,7 +590,7 @@ public:
         for (int i = 0; i < steps; i++)
         {
             Vector<double> b = x;
-            if (cg<double>(M, b, x, 0.0001, 100) < 0)
+            if (cg<double>(M, b, x, 0.001, 100) < 0)
                 throw "Error";
         }
 
@@ -680,7 +680,7 @@ public:
         for (int i = 0; i < steps; i++)
         {
             Vector<double> b = x;
-            if (cg<double>(M, b, x, 0.01, 1000) < 0)
+            if (cg<double>(M, b, x, 0.001, 1000) < 0)
                 throw "Error";
         }
 
@@ -772,7 +772,7 @@ public:
         for (int i = 0; i < steps; i++)
         {
             Vector<double> b = x;
-            if (cg<double>(M, b, x, 0.01, 1000) < 0)
+            if (cg<double>(M, b, x, 0.001, 1000) < 0)
                 throw "Error";
         }
 
@@ -982,7 +982,7 @@ T error(Vector<T> a, Vector<T> b)
 int main(){
     test();
 
-    Heat1D test(0.3125, 99, 0.0001);
+    Heat1D test(0.3125, 99, 0.001);
     try {
     Vector<double> a = test.exact(1);
 
@@ -994,10 +994,10 @@ int main(){
 
 
     Heat2D test2(0.3125, 99, 0.001);
-    Vector<double> a2 = test2.exact(1);
+    Vector<double> a2 = test2.exact(0.5);
 
     std::cout << "head2D, start solving ..."  << std::endl;
-    Vector<double> b2 = test2.solve(1);
+    Vector<double> b2 = test2.solve(0.5);
 
     std::cout << "total error: " << error(a2,b2) << std::endl;
     std::cout << "average error: " << error(a2,b2) / (99*99) << std::endl;
@@ -1016,10 +1016,10 @@ int main(){
 
 
     Heat<2> test4(0.3125, 99, 0.001);
-    Vector<double> a4= test4.exact(1);
+    Vector<double> a4= test4.exact(0.5);
 
     std::cout << "head<2>, start solving ..."  << std::endl;
-    Vector<double> b4 = test4.solve(1);
+    Vector<double> b4 = test4.solve(0.5);
 
     std::cout << "total error: " << error(a4,b4) << std::endl;
     std::cout << "average error: " << error(a4,b4) / (99*99) << std::endl;
@@ -1028,10 +1028,10 @@ int main(){
     std::cout << "difference between head<2> and head2D (solve): " << error(b2,b4) << std::endl;
 
     Heat<3> test5(0.3125, 99, 0.001);
-    Vector<double> a5 = test5.exact(1);
+    Vector<double> a5 = test5.exact(0.5);
 
     std::cout << "head<3>, start solving ..."  << std::endl;
-    Vector<double> b5 = test5.solve(1);
+    Vector<double> b5 = test5.solve(0.5);
 
     std::cout << "total error: " << error(a5,b5) << std::endl;
     std::cout << "average error: " << error(a5,b5) / (99*99*99) << std::endl;
