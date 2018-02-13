@@ -2,7 +2,7 @@
  * @brief tw3720tu 2017 Final-project heat-equation
  * @authors Jens Langerak 4317327, Thomas Stolp 4377907
  */
- 
+
 
 #include <iostream>
 #include <typeinfo>
@@ -31,7 +31,7 @@ bool equals(const T a, const T b)
 
 bool equals(const double a, const double b)
 {
-    return fabs(a - b) < 0.0001;  
+    return fabs(a - b) < 0.0001;
 }
 
 
@@ -159,10 +159,10 @@ public:
         }
         for (auto i=0; i<other.size; i++)
             v.data[i] = data[i] + other.data[i];
-    
+
         return v;
     }
-    
+
      /**
      * @brief Subtract two vectors.
      * @param other
@@ -175,13 +175,13 @@ public:
         {
             throw "Vectors don't have the same size";
         }
-        
+
         for (auto i=0; i<other.size; i++)
              v.data[i] = data[i] - other.data[i];
-        
+
         return v;
     }
-    
+
     /**
      * @brief Multiply the vector with a scalar.
      * @param scalar
@@ -194,7 +194,7 @@ public:
             v.data[i] = scalar*data[i];
         return v;
     }
-    
+
     /**
      * @brief Get element at index.
      * @param index index of the requested element.
@@ -207,16 +207,16 @@ public:
 
         return data[index];
     }
-    
+
     /**
      * @brief Get the size of the vector.
      * @return The size of the vector.
      */
-    int get_size() const 
-    { 
-        return size; 
+    int get_size() const
+    {
+        return size;
     }
-    
+
 
     void print() const
     {
@@ -226,8 +226,8 @@ public:
                 std::cout << ", ";
             std::cout << data[x];
         }
-        std::cout << "]" << std::endl;        
-    }   
+        std::cout << "]" << std::endl;
+    }
 };
 
 template <typename T>
@@ -240,13 +240,13 @@ bool equals(const Vector<T>& a, const Vector<T>& b)
         if(!equals(a[i], b[i]))
             return false;
     }
-       
+
     return true;
 }
 
-    
+
 /**
- * @brief Multiply v with scalar. 
+ * @brief Multiply v with scalar.
  * @param scalar
  * @param v
  * @return A new vector with the values v * scalar;
@@ -270,7 +270,7 @@ T dot(const Vector<T>& l, const Vector<T>& r)
     {
         throw "Vectors don't have the same size";
     }
-        
+
     // Calculate the dot product
     double d=0;
     for (auto i=0; i<l.get_size(); i++)
@@ -297,7 +297,7 @@ public:
     {
 
     }
-     
+
     /**
      * @brief Destroy the matrix.
      */
@@ -306,7 +306,7 @@ public:
         size_m = 0;
         size_n = 0;
     }
-    
+
     /**
      * @brief Copy constructor.
      * @param m
@@ -314,9 +314,9 @@ public:
      */
     Matrix(const Matrix<T>& m)
     : Matrix<T>(m.size_m, m.size_n)
-    {                        
+    {
         for (const auto& element : m.data) {
-            data[element.first] = element.second; 
+            data[element.first] = element.second;
         }
     }
 
@@ -332,11 +332,11 @@ public:
         m.size_m = 0;
         m.size_n = 0;
         for (const auto& element : m.data) {
-            data[element.first] = element.second; 
+            data[element.first] = element.second;
         }
         m.data.clear();
     }
-    
+
     /**
      * @brief Copy assignment.
      * @param other
@@ -347,10 +347,10 @@ public:
         {
             if (size_m != other.size_m || size_n != other.size_n)
                 throw "Wrong size";
-                
+
             data.clear();
             for (const auto& element : other.data) {
-                data[element.first] = element.second; 
+                data[element.first] = element.second;
             }
         }
         return *this;
@@ -366,19 +366,19 @@ public:
         {
             if (size_m != other.size_m || size_n != other.size_n)
                 throw "Wrong size";
-                
+
             data.clear();
             for (const auto& element : other.data) {
-                data[element.first] = element.second; 
+                data[element.first] = element.second;
             }
-                
+
             other.size_m = 0;
             other.size_n = 0;
             other.data.clear();
         }
         return *this;
     }
-    
+
     /**
      * @brief Get the element at position index.
      * @param index An array with two values {m,n}.
@@ -388,15 +388,15 @@ public:
     {
         if (index.size() != 2)
             throw "Needs 2 elements for the index";
-            
+
         int m = index[0];
         int n = index[1];
         if (m < 0 || n < 0 || m >= size_m || n >= size_n)
             throw "Index out of bounds";
-            
+
         return data[{m,n}];
     }
-    
+
     /**
      * @brief Multiply this matrix with vector v.
      * @param v a vector.
@@ -407,15 +407,15 @@ public:
         Vector<T> result(size_m);
         if (v.get_size() != size_n)
             throw "Wrong size";
-            
-        for (int i=0; i< size_m; i++) 
+
+        for (int i=0; i< size_m; i++)
             result[i] = 0;
-            
+
         // use only the non-zero elements from the matrix.
         for (const auto& element : data) {
-            result[element.first[0]] += element.second * v[element.first[1]]; 
-        }        
-        
+            result[element.first[0]] += element.second * v[element.first[1]];
+        }
+
         return result;
     }
 
@@ -428,7 +428,7 @@ public:
     {
         return matvec(v);
     }
-    
+
     void print() const
     {
         for(int y = 0; y < size_m; y++) {
@@ -436,7 +436,7 @@ public:
             for(int x = 0; x < size_n; x++) {
                 if (x != 0)
                     std::cout << ", ";
-                    
+
                 auto search = data.find({y,x});;
                 if(search != data.end()) {
                     std::cout << search->second;
@@ -446,16 +446,16 @@ public:
             }
             std::cout << "]" << std::endl;
         }
-        
+
     }
-    
+
     /**
      * @brief Returns the size in dimension dim.
      * @param dim 0 or 1.
      * @return The size in the give dimension.
      */
-    int get_size(int dim) const 
-    { 
+    int get_size(int dim) const
+    {
         if (dim == 0) {
             return size_m;
         } else if (dim == 1) {
@@ -464,7 +464,7 @@ public:
             throw "Dimension must be 0 or 1";
         }
     }
- 
+
 };
 
 template <typename T>
@@ -472,7 +472,7 @@ bool equals(Matrix<T>& a, Matrix<T>& b)
 {
     if (a.get_size(0)!= b.get_size(0) || a.get_size(1) != b.get_size(1))
         return false;
-        
+
     for(int i = 0; i < a.get_size(0); i++)
     {
         for(int j = 0; j < a.get_size(1); j++)
@@ -481,7 +481,7 @@ bool equals(Matrix<T>& a, Matrix<T>& b)
                 return false;
         }
     }
-       
+
     return true;
 }
 
@@ -496,10 +496,10 @@ bool equals(Matrix<T>& a, Matrix<T>& b)
  */
 template<typename T>
 int cg(
-    const Matrix<T> &A, 
-    const Vector<T> &b, 
-    Vector<T> &x, 
-    T tol, 
+    const Matrix<T> &A,
+    const Vector<T> &b,
+    Vector<T> &x,
+    T tol,
     int maxiter)
 {
     Vector<T> r = b - A * x;
@@ -508,7 +508,7 @@ int cg(
     for(int k = 0; k < maxiter; k++)
     {
         T dot_r = dot(r,r);
-        
+
         A_p = A * p;
         T alpha = dot_r / dot(A_p, p);
         x = x + alpha * p;
@@ -517,7 +517,7 @@ int cg(
         if (dot_r_n < tol*tol) {
             return k;
         }
-        
+
         T beta = dot_r_n / dot_r;
         p = r + beta * p;
     }
@@ -532,7 +532,7 @@ private:
     double alpha;
     double dt;
     double dx;
-    
+
 public:
     /**
      * @brief Create an object that can solve the heat equation in 1D.
@@ -562,21 +562,21 @@ public:
 
         // Calculate u_0
         for (int i = 0; i < m; i++)
-        {        
+        {
             u_0[i] = sin(M_PI * (i + 1) * dx); //+1 because cell centered
         }
     }
-    
+
     /**
      * @brief Calculate the exact solution at time t.
-     * @param t 
+     * @param t
      * @return The exect solution at time t.
      */
     Vector<double> exact(double t) const
     {
         return exp(-M_PI * M_PI * alpha * t) * u_0;
     }
-    
+
     /**
      * @brief Calculate the numerical solution at time t_end.
      * @param t_end
@@ -586,14 +586,14 @@ public:
     {
         Vector<double> x = u_0;
         int steps = t_end / dt ;
-        
+
         for (int i = 0; i < steps; i++)
         {
-            Vector<double> b = x;    
-            if (cg<double>(M, b, x, 0.0001, 100) < 0) 
+            Vector<double> b = x;
+            if (cg<double>(M, b, x, 0.0001, 100) < 0)
                 throw "Error";
         }
-        
+
         return x;
     }
 };
@@ -607,7 +607,7 @@ private:
     double alpha;
     double dt;
     double dx;
-    
+
 public:
     /**
      * @brief Create an object that can solve the heat equation in 2D.
@@ -647,25 +647,25 @@ public:
 
         // Calculate u_0
         for (int i = 0; i < m; i++)
-        {  
+        {
             double u_i = sin(M_PI * (i + 1) * dx); //+1 because cell centered
             for (int j = 0; j < m; j++)
-            {      
+            {
                 u_0[i * m + j] = u_i + sin(M_PI * (j + 1) * dx); //+1 because cell centered
             }
         }
     }
-    
+
     /**
      * @brief Calculate the exact solution at time t.
-     * @param t 
+     * @param t
      * @return The exect solution at time t.
-     */ 
+     */
     Vector<double> exact(double t) const
     {
         return exp(-2*M_PI * M_PI * alpha * t) * u_0;
     }
-    
+
     /**
      * @brief Calculate the numerical solution at time t_end.
      * @param t_end
@@ -673,14 +673,14 @@ public:
      */
     Vector<double> solve(double t_end) const
     {
-            
+
         Vector<double> x = u_0;
         int steps = t_end / dt ;
-        
+
         for (int i = 0; i < steps; i++)
         {
-            Vector<double> b = x;  
-            if (cg<double>(M, b, x, 0.01, 1000) < 0) 
+            Vector<double> b = x;
+            if (cg<double>(M, b, x, 0.01, 1000) < 0)
                 throw "Error";
         }
 
@@ -696,7 +696,7 @@ private:
     double alpha;
     double dt;
     double dx;
-    
+
 public:
     /**
      * @brief Create an object that can solve the heat equation in nD.
@@ -713,8 +713,8 @@ public:
     {
         int points = pow(m,n);
         int x[n] {0}; //keep track of the coordinate
-        double s = alpha * dt / (dx * dx);     
-                
+        double s = alpha * dt / (dx * dx);
+
         // iterate over all the point while keeping track of the coordinates of the points.
         for (int i = 0; i < points; i++)
         {
@@ -724,19 +724,19 @@ public:
             {
                 u_0[i] += sin(M_PI * (x[j] + 1) * dx);
             }
-            
-            
+
+
             // calculate row i in matrix M.
             M[{i,i}] = 1 + 2 * n * s;
             for (int j = 0; j < n; j++) {
                 int index_l = i - pow(m, j);
                 int index_h = i + pow(m, j);
                 if (x[j] - 1 >= 0)
-                    M[{i,index_l}] = -1 * s; 
+                    M[{i,index_l}] = -1 * s;
                 if (x[j] + 1 < m)
-                    M[{i,index_h}] = -1 * s; 
+                    M[{i,index_h}] = -1 * s;
             }
-            
+
             // update coordinate.
             for (int j = 0; j < n; j++)
             {
@@ -748,31 +748,31 @@ public:
             }
         }
     }
-    
+
     /**
      * @brief Calculate the exact solution at time t.
-     * @param t 
+     * @param t
      * @return The exect solution at time t.
      */
     Vector<double> exact(double t) const
     {
         return exp(-n*M_PI * M_PI * alpha * t) * u_0;
     }
-    
+
     /**
      * @brief Calculate the numerical solution at time t_end.
      * @param t_end
      * @return The numerical solution at time t_end.
      */
     Vector<double> solve(double t_end) const
-    {            
+    {
         Vector<double> x = u_0;
         int steps = t_end / dt ;
-        
+
         for (int i = 0; i < steps; i++)
         {
-            Vector<double> b = x;  
-            if (cg<double>(M, b, x, 0.01, 1000) < 0) 
+            Vector<double> b = x;
+            if (cg<double>(M, b, x, 0.01, 1000) < 0)
                 throw "Error";
         }
 
@@ -808,7 +808,7 @@ void test_vector_constructor(void)
     assert(equals(A,B));
     assert(equals(A,C));
     assert(!equals(A,E));
-    
+
     assert(!equals(A,F));
     assert(!equals(A,G));
     assert(!equals(F,G));
@@ -827,19 +827,19 @@ void test_vector_operations(void)
 {
     Vector<double> A({1,2,3});
     Vector<double> B({2,4,-1});
-    
+
     Vector<double> expected({3,6,2});
     assert(equals(expected, A+B));
-    
+
     expected = Vector<double>({-1,-2,4});
     assert(equals(expected, A-B));
-    
+
     expected = Vector<double>({4, 8, -2});
     assert(equals(expected, 2.0 * B));
     assert(equals(expected, B * 2.0));
 
     assert(equals(7.0, dot(A,B)));
-    
+
     bool exception = false;
     Vector<double> C({2,4});
     try {
@@ -849,7 +849,7 @@ void test_vector_operations(void)
     }
     assert(exception);
     exception = false;
-    
+
     try {
         C+A;
     } catch (char const* e) {
@@ -857,7 +857,7 @@ void test_vector_operations(void)
     }
     assert(exception);
     exception = false;
-    
+
     try {
         A-C;
     } catch (char const* e) {
@@ -865,7 +865,7 @@ void test_vector_operations(void)
     }
     assert(exception);
     exception = false;
-    
+
     try {
         C-A;
     } catch (char const* e) {
@@ -873,7 +873,7 @@ void test_vector_operations(void)
     }
     assert(exception);
     exception = false;
-    
+
     try {
         dot(A,C);
     } catch (char const* e) {
@@ -881,13 +881,13 @@ void test_vector_operations(void)
     }
     assert(exception);
     exception = false;
-    
+
     try {
         dot(C,A);
     } catch (char const* e) {
         exception = true;
     }
-    assert(exception);    
+    assert(exception);
 }
 
 void test_matrix(void)
@@ -901,7 +901,7 @@ void test_matrix(void)
     test[{2,3}] = 1.0;
     assert(equals(-1.1, test[{0,0}]));
     assert(equals(1.0, test[{2,3}]));
-    
+
     bool exception = false;
     try {
         test[{3,0}] = 1.0;
@@ -930,11 +930,11 @@ void test_matrix_vector(void)
             M[{i,j}] = i + j;
         }
     }
-    
+
     Vector<double> expected({20, 30, 40});
 
     assert(equals(expected, M*v));
-    
+
     Vector<double> v2({1,2,3});
     bool exception = false;
     try {
@@ -943,7 +943,7 @@ void test_matrix_vector(void)
         exception = true;
     }
         assert(exception);
-        
+
     exception = false;
     Vector<double> v3({1,2,1,1,3});
     try {
@@ -952,7 +952,7 @@ void test_matrix_vector(void)
         exception = true;
     }
     assert(exception);
-    
+
 }
 
 /**
@@ -976,7 +976,7 @@ T error(Vector<T> a, Vector<T> b)
         result += fabs(a[i] - b[i]);
     }
     return result;
-    
+
 }
 
 int main(){
@@ -985,40 +985,56 @@ int main(){
     Heat1D test(0.3125, 99, 0.0001);
     try {
     Vector<double> a = test.exact(1);
+
+    std::cout << "head1D, start solving ..." << std::endl;
     Vector<double> b = test.solve(1);
 
-    std::cout << "Error head1D: " << error(a,b) << std::endl;
+    std::cout << "total error: " << error(a,b) << std::endl;
+    std::cout << "average error: " << error(a,b) / 99 << std::endl;
+
 
     Heat2D test2(0.3125, 99, 0.001);
-    Vector<double> a2 = test2.exact(0.5);
-    
-    std::cout << "start solving:"  << std::endl;
-    Vector<double> b2 = test2.solve(0.5);
+    Vector<double> a2 = test2.exact(1);
 
-    std::cout << "Error head2D: " << error(a2,b2) << "  " << error(a2,b2) / (99 * 99) << std::endl;
-    
-    Heat<1> test3(0.3125, 99, 0.0001);
+    std::cout << "head2D, start solving ..."  << std::endl;
+    Vector<double> b2 = test2.solve(1);
+
+    std::cout << "total error: " << error(a2,b2) << std::endl;
+    std::cout << "average error: " << error(a2,b2) / (99*99) << std::endl;
+
+    Heat<1> test3(0.3125, 99, 0.001);
     Vector<double> a3 = test3.exact(1);
+
+    std::cout << "head<1>, start solving ..."  << std::endl;
     Vector<double> b3 = test3.solve(1);
 
-    std::cout << "Error head1: " << error(a3,b3) << std::endl;
-    std::cout << "diff head1 head1D: " << error(a,a3) << std::endl;
-    std::cout << "diff head1 head1D: " << error(b,b3) << std::endl;
-    
-    
+    std::cout << "total error: " << error(a3,b3) << std::endl;
+    std::cout << "average error: " << error(a3,b3) / 99 << std::endl;
+
+    std::cout << "difference between head<1> and head1D (exact): " << error(a,a3) << std::endl;
+    std::cout << "difference between head<1> and head1D (solve): " << error(b,b3) << std::endl;
+
+
     Heat<2> test4(0.3125, 99, 0.001);
-    Vector<double> a4= test4.exact(0.5);
-    Vector<double> b4 = test4.solve(0.5);
+    Vector<double> a4= test4.exact(1);
 
-    std::cout << "Error head2: " << error(a4,b4) << std::endl;
-    std::cout << "diff head2 head2D: " << error(a2,a4) << std::endl;
-    std::cout << "diff head2 head2D: " << error(b2,b4) << std::endl;
-    
-     Heat<3> test5(0.3125, 49, 0.01);
-    Vector<double> a5 = test5.exact(0.25);
-    Vector<double> b5 = test5.solve(0.25);
+    std::cout << "head<2>, start solving ..."  << std::endl;
+    Vector<double> b4 = test4.solve(1);
 
-    std::cout << "Error head3: " << error(a5,b5) << "  " << error(a5,b5) / (49 * 49 * 49) << std::endl;
+    std::cout << "total error: " << error(a4,b4) << std::endl;
+    std::cout << "average error: " << error(a4,b4) / (99*99) << std::endl;
+
+    std::cout << "difference between head<2> and head2D (exact): " << error(a2,a4) << std::endl;
+    std::cout << "difference between head<2> and head2D (solve): " << error(b2,b4) << std::endl;
+
+    Heat<3> test5(0.3125, 99, 0.001);
+    Vector<double> a5 = test5.exact(1);
+
+    std::cout << "head<3>, start solving ..."  << std::endl;
+    Vector<double> b5 = test5.solve(1);
+
+    std::cout << "total error: " << error(a5,b5) << std::endl;
+    std::cout << "average error: " << error(a5,b5) / (99*99*99) << std::endl;
     } catch(const char * e) {
             std::cout << e << std::endl;
     }
