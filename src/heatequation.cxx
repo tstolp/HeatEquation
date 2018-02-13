@@ -986,7 +986,7 @@ int main(){
     try {
     Vector<double> a = test.exact(1);
 
-    std::cout << "head1D, start solving ..." << std::endl;
+    std::cout << "heat1D, start solving ..." << std::endl;
     Vector<double> b = test.solve(1);
 
     std::cout << "total error: " << error(a,b) << std::endl;
@@ -996,7 +996,7 @@ int main(){
     Heat2D test2(0.3125, 99, 0.001);
     Vector<double> a2 = test2.exact(0.5);
 
-    std::cout << "head2D, start solving ..."  << std::endl;
+    std::cout << "heat2D, start solving ..."  << std::endl;
     Vector<double> b2 = test2.solve(0.5);
 
     std::cout << "total error: " << error(a2,b2) << std::endl;
@@ -1005,32 +1005,32 @@ int main(){
     Heat<1> test3(0.3125, 99, 0.001);
     Vector<double> a3 = test3.exact(1);
 
-    std::cout << "head<1>, start solving ..."  << std::endl;
+    std::cout << "heat<1>, start solving ..."  << std::endl;
     Vector<double> b3 = test3.solve(1);
 
     std::cout << "total error: " << error(a3,b3) << std::endl;
     std::cout << "average error: " << error(a3,b3) / 99 << std::endl;
 
-    std::cout << "difference between head<1> and head1D (exact): " << error(a,a3) << std::endl;
-    std::cout << "difference between head<1> and head1D (solve): " << error(b,b3) << std::endl;
+    std::cout << "difference between heat<1> and heat1D (exact): " << error(a,a3) << std::endl;
+    std::cout << "difference between heat<1> and heat1D (solve): " << error(b,b3) << std::endl;
 
 
     Heat<2> test4(0.3125, 99, 0.001);
     Vector<double> a4= test4.exact(0.5);
 
-    std::cout << "head<2>, start solving ..."  << std::endl;
+    std::cout << "heat<2>, start solving ..."  << std::endl;
     Vector<double> b4 = test4.solve(0.5);
 
     std::cout << "total error: " << error(a4,b4) << std::endl;
     std::cout << "average error: " << error(a4,b4) / (99*99) << std::endl;
 
-    std::cout << "difference between head<2> and head2D (exact): " << error(a2,a4) << std::endl;
-    std::cout << "difference between head<2> and head2D (solve): " << error(b2,b4) << std::endl;
+    std::cout << "difference between heat<2> and heat2D (exact): " << error(a2,a4) << std::endl;
+    std::cout << "difference between heat<2> and heat2D (solve): " << error(b2,b4) << std::endl;
 
     Heat<3> test5(0.3125, 99, 0.001);
     Vector<double> a5 = test5.exact(0.5);
 
-    std::cout << "head<3>, start solving ..."  << std::endl;
+    std::cout << "heat<3>, start solving ..."  << std::endl;
     Vector<double> b5 = test5.solve(0.5);
 
     std::cout << "total error: " << error(a5,b5) << std::endl;
